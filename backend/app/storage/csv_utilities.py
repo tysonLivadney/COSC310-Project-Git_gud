@@ -11,14 +11,14 @@ class CSVUtilities:
         if not self.check_file_exists():
             raise FileNotFoundError(f"CSV file not found: {file_path}. Ensure the file exists in the correct location.")
 
-    def check_file_exists(self) -> bool:
+    def _check_file_exists(self) -> bool:
         return os.path.isfile(self.file_path)
     
-    def read(self) -> List[Dict]:
+    def read_all(self) -> List[Dict]:
         with open(self.file_path, mode='r', newline='') as csvfile:
             return list(csv.DictReader(csvfile))
         
-    def write(self, rows: List[Dict]):
+    def write_all(self, rows: List[Dict]):
         with open(self.file_path, mode='w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fields)
             writer.writeheader()
