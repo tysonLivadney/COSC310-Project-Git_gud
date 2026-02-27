@@ -6,3 +6,4 @@ __pycache__/
 #ignore environment files
 venv/
 .env
+requirements.txt
