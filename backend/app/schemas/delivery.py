@@ -20,8 +20,8 @@ class Delivery(BaseModel):
         driver: Optional[Driver] = None
         status: DeliveryStatus = DeliveryStatus.PENDING
         estimated_arrival: Optional[datetime] = None
-        created_at: datetime = Field(default_factory=datetime.now())
-        updated_at: datetime = Field(default_factory=datetime.now())
+        created_at: datetime = Field(default_factory=datetime.now)
+        updated_at: datetime = Field(default_factory=datetime.now)
 
 Delivery.model_rebuild()
 
