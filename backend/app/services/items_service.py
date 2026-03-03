@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from schemas.item import Item, ItemCreate, ItemUpdate
 from repositories.items_repo import load_all, save_all
 
-
 def list_items() -> List[Item]:
     return [Item(**it) for it in load_all()]
 

@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Dict, Any
+from typing import List
 from fastapi import HTTPException
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
 from repositories.restaurants_repo import load_all, save_all
@@ -30,7 +30,6 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaura
     for idx, r in enumerate(restaurants):
         if r.get("id") == restaurant_id:
             updated = Restaurant(
-                id=restaurant_id,
                 name=payload.name.strip(),
                 address=payload.address.strip(),
                 description=payload.description.strip(),
