@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from typing import List
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
-from services.restaurants_service import list_restaurants, create_restaurant, delete_restaurant, update_restaurant, get_restaurant_id
+from services.restaurants_service import list_restaurants, create_restaurant, delete_restaurant, update_restaurant, get_restaurant_by_id
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -13,11 +13,9 @@ def get_restaurants():
 def post_restaurant(payload: RestaurantCreate):
     return create_restaurant(payload)
 
-from services.restaurants_service import list_restaurants, create_restaurant, get_restaurant_id
-
 @router.get("/{restaurant_id}", response_model=Restaurant)
 def get_restaurant(restaurant_id: str):
-    return get_restaurant_id(restaurant_id)
+    return get_restaurant_by_id(restaurant_id)
 
 @router.put("/{restaurant_id}", response_model=Restaurant)
 def put_restaurant(restaurant_id: str, payload: RestaurantUpdate):
