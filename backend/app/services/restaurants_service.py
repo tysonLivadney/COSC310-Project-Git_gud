@@ -18,7 +18,7 @@ def create_restaurant(payload: RestaurantCreate) -> Restaurant:
     save_all(restaurants)
     return new_restaurant
 
-def get_restaurant_id(restaurant_id: str) -> Restaurant:
+def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     restaurants = load_all()
     for r in restaurants:
         if r.get("id") == restaurant_id:
