@@ -1,7 +1,6 @@
 from pathlib import Path
 import json, os
 from typing import List, Dict, Any
-from storage import csv_utilities
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "storage" / "data" / "menus.json"
 

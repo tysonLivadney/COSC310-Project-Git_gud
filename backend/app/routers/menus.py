@@ -17,10 +17,6 @@ def post_menu(payload: MenuCreate):
 def get_menu(menu_id: str):
     return get_menu_by_id(menu_id)
 
-@router.get("/{menu_id}/menus", response_model=List[Menu])
-def get_menus_by_restaurant(menu_id: str):
-    return get_menus_by_restaurant_id(menu_id)
-
 @router.put("/{menu_id}", response_model=Menu)
 def put_menu(menu_id: str, payload: MenuUpdate):
     return update_menu(menu_id, payload)
