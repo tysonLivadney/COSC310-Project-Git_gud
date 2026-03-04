@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from routers.items import router as items_router
 from routers.restaurants import router as restaurants_router
 from routers.menus import router as menus_router
+from routers.menu_items import router as menu_items_router
 
 app = FastAPI()
 
@@ -11,3 +12,4 @@ def health():
 
 app.include_router(restaurants_router)
 app.include_router(menus_router)
+app.include_router(menu_items_router)
