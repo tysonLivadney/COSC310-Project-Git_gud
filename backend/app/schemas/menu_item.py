@@ -5,7 +5,7 @@ from decimal import Decimal
 class MenuItemCreate(BaseModel):
     title: str = Field(..., min_length=3, max_length=50)
     description: str = Field(..., max_length=300)
-    price: Decimal = Field(..., ge = 0, decimal_places = 2, max_digits = 6)
+    price: float = Field(..., ge = 0, lt = 10000)
     in_stock: bool
     menu_id: str #link to menu
 
