@@ -13,6 +13,7 @@ def create_menu(payload: MenuCreate) -> Menu:
     new_id = str(uuid.uuid4())
     if any(m.get("id") == new_id for m in menus):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+    #ensure menu is attached to existing restaurant
     if not any(r["id"] == payload.restaurant_id for r in load_restaurants()):
         raise HTTPException(status_code=404, detail=f"Restaurant '{payload.restaurant_id}' not found")
     new_menu = Menu(
@@ -55,6 +56,14 @@ def delete_menu(menu_id: str) -> None:
     new_menus = [m for m in menus if m.get("id") != menu_id]
     if len(new_menus) == len(menus):
         raise HTTPException(status_code=404, detail=f"Menu '{menu_id}' not found")
+    save_all(new_menus)
+
+#cascade delete menus when restaurant is deleted
+def delete_menu_items_by_restaurant_id(restaurant_id: str) -> None:
+    menus = load_all()
+    new_menus = [m for m in menus if m.get("restaurant_id") != restaurant_id]
+    if len(new_menus) == len(menus):
+        raise HTTPException(status_code=404, detail=f"Menus for Restaurant '{restaurant_id}' not found")
     save_all(new_menus)
 
 
