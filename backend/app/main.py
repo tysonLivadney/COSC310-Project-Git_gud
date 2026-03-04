@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from routers.auth import router as auth_router
 from routers.items import router as items_router
 from routers.delivery import router as delivery_router
 app = FastAPI()
@@ -11,3 +12,5 @@ app.include_router(delivery_router)
 
 
 
+app.include_router(auth_router)
+app.include_router(items_router)
