@@ -1,17 +1,19 @@
 # Passwords are salted and hashed before storage so the JSON file never contains plaintext passwords.
 # Every protected route resolves the session from the bearer token and rejects expired tokens.
+# This factory returns a FastAPI dependency so routes can declare which roles are allowed.
 
 import hashlib
 import hmac
 import secrets
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 from repositories.sessions_repo import load_all as load_all_sessions
 from repositories.sessions_repo import save_all as save_all_sessions
 from repositories.users_repo import load_all as load_all_users
 from repositories.users_repo import save_all as save_all_users
-from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, UserResponse
+from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, Role, UserResponse
 
 
 SESSION_DURATION_HOURS = 24
@@ -132,3 +134,11 @@ def get_current_user(authorization: str | None = Header(default=None)) -> UserRe
             return _build_user_response(user)
 
     raise HTTPException(status_code=404, detail="User not found")
+
+def require_roles(*allowed_roles: Role) -> Callable[[UserResponse], UserResponse]:
+    def role_checker(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(status_code=403, detail="You do not have permission to perform this action")
+        return current_user
+
+    return role_checker
