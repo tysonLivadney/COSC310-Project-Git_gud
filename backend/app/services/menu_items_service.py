@@ -44,7 +44,7 @@ def get_menu_items_by_menu_id(menu_id: str) -> List[MenuItem]:
 def get_menu_items_by_restaurant_id(restaurant_id: str) -> List[MenuItem]:
     menus = load_menus()
     menu_items = load_all()
-    menu_ids = [Menu(**m) for m in menus if m.get("restaurant_id") == restaurant_id]
+    menu_ids = [m["id"] for m in menus if m.get("restaurant_id") == restaurant_id]
     return [MenuItem(**m) for m in menu_items if m.get("menu_id") in menu_ids]
 
 
@@ -75,8 +75,7 @@ def delete_menu_item(menu_item_id: str) -> None:
 def delete_menu_items_by_menu_id(menu_id: str) -> None:
     menu_items = load_all()
     new_menu_items = [m for m in menu_items if m.get("menu_id") != menu_id]
-    if len(new_menu_items) == len(menu_items):
-        raise HTTPException(status_code=404, detail=f"Menu Items for Menu '{menu_id}' not found")
+    #no http exception since items may not exist
     save_all(new_menu_items)
 
 

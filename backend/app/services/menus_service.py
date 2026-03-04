@@ -2,6 +2,7 @@ import uuid
 from typing import List, Dict, Any
 from fastapi import HTTPException
 from schemas.menu import Menu, MenuCreate, MenuUpdate
+from services.menu_items_service import delete_menu_items_by_menu_id
 from repositories.menus_repo import load_all, save_all
 from repositories.restaurants_repo import load_all as load_restaurants
 
@@ -52,6 +53,7 @@ def update_menu(menu_id: str, payload: MenuUpdate) -> Menu:
     raise HTTPException(status_code=404, detail=f"Menu '{menu_id}' not found")
 
 def delete_menu(menu_id: str) -> None:
+    delete_menu_items_by_menu_id(menu_id) #delete menu items first
     menus = load_all()
     new_menus = [m for m in menus if m.get("id") != menu_id]
     if len(new_menus) == len(menus):
@@ -60,10 +62,10 @@ def delete_menu(menu_id: str) -> None:
 
 #cascade delete menus when restaurant is deleted
 def delete_menu_items_by_restaurant_id(restaurant_id: str) -> None:
+    delete_menu_items_by_menu_id(restaurant_id) #delete menu items first
     menus = load_all()
     new_menus = [m for m in menus if m.get("restaurant_id") != restaurant_id]
-    if len(new_menus) == len(menus):
-        raise HTTPException(status_code=404, detail=f"Menus for Restaurant '{restaurant_id}' not found")
+    #no http exception since menus may not exist
     save_all(new_menus)
 
 
