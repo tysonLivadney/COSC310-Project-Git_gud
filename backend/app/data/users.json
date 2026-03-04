@@ -1,0 +1,20 @@
+[
+  {
+    "id": "5cee3990-bd33-471c-973c-a27f57612573",
+    "name": "Alice",
+    "email": "alice@example.com",
+    "role": "owner",
+    "password_salt": "b51c0a5e4e862c2a47506a862eca816a",
+    "password_hash": "933a97e871a1b8b83205dc637f658113deb743d7956120160b1c7d29c522418a",
+    "created_at": "2026-03-04T20:07:18Z"
+  },
+  {
+    "id": "f4692dd0-7a02-44ee-a8e0-a88692922494",
+    "name": "Bob",
+    "email": "bob@example.com",
+    "role": "user",
+    "password_salt": "68bfd8574af6ef1339538c9fcd792897",
+    "password_hash": "88a23536f0c798f54a024b0e9baa8c73fb2d4c1da2be954564e6f24c0a7a2009",
+    "created_at": "2026-03-04T20:07:32Z"
+  }
+]

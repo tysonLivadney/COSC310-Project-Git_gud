@@ -1,22 +1,17 @@
 from pathlib import Path
-import json
-import os
-from typing import Any, Dict, List
+
+from interfaces.repositories import IUserRepository
+from repositories.base_json_repo import BaseJsonRepository
 
 
-DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "users.json"
+class JsonUserRepository(BaseJsonRepository, IUserRepository):
+    """Concrete JSON-file implementation of IUserRepository.
 
+    LSP: Fully satisfies the IUserRepository contract so any caller can
+    substitute another IUserRepository implementation without behavioural
+    changes (e.g. a database-backed repository in the future).
+    """
 
-def load_all() -> List[Dict[str, Any]]:
-    if not DATA_PATH.exists():
-        return []
-    with DATA_PATH.open("r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def save_all(users: List[Dict[str, Any]]) -> None:
-    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-    tmp = DATA_PATH.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as file:
-        json.dump(users, file, ensure_ascii=False, indent=2)
-    os.replace(tmp, DATA_PATH)
+    @property
+    def data_path(self) -> Path:
+        return Path(__file__).resolve().parents[1] / "data" / "users.json"

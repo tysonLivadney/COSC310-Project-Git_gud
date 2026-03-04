@@ -4,11 +4,47 @@
 
 This project uses a small FastAPI backend with JSON-file persistence.
 
-Current backend layers:
-- `app/routers`
-- `app/services`
-- `app/repositories`
-- `app/schemas`
+### Architecture — SOLID Principles
+
+The backend is structured around five SOLID principles:
+
+| Principle | Where applied |
+|-----------|---------------|
+| **S**ingle Responsibility | `PasswordService` only hashes passwords; `SessionService` only manages sessions; `AuthService` only handles registration and login; `ItemService` only handles item CRUD. |
+| **O**pen/Closed | `BaseJsonRepository` provides the JSON persistence strategy. New storage backends (e.g. SQLite, PostgreSQL) can be added by extending `BaseJsonRepository` or implementing a repository interface — **no service code changes required**. |
+| **L**iskov Substitution | `JsonUserRepository`, `JsonSessionRepository`, and `JsonItemRepository` fully satisfy their corresponding abstract interfaces, so any implementation can be swapped transparently. |
+| **I**nterface Segregation | Three narrow interfaces (`IUserRepository`, `ISessionRepository`, `IItemRepository`) are defined in `interfaces/repositories.py`. Services only import the interface they need. |
+| **D**ependency Inversion | Services depend on abstract interfaces, not on concrete JSON classes. Concrete bindings live exclusively in `dependencies.py` (the composition root). |
+
+### Backend Layers
+
+```
+app/
+├── interfaces/          # ISP / DIP — abstract repository contracts
+│   └── repositories.py
+├── repositories/        # OCP / LSP — concrete JSON implementations
+│   ├── base_json_repo.py  ← shared persistence logic (DRY)
+│   ├── users_repo.py
+│   ├── sessions_repo.py
+│   └── items_repo.py
+├── services/            # SRP — focused business-logic classes
+│   ├── password_service.py   ← password hashing only
+│   ├── session_service.py    ← session lifecycle only
+│   ├── auth_service.py       ← register / login / role guard
+│   └── items_service.py      ← item CRUD only
+├── routers/             # HTTP boundary — thin, delegates to services
+│   ├── auth.py
+│   └── items.py
+├── schemas/             # Pydantic request/response models
+│   ├── auth.py
+│   └── item.py
+├── dependencies.py      # Composition root — wires interfaces → implementations
+├── main.py
+└── data/                # JSON persistence files
+    ├── users.json
+    ├── sessions.json
+    └── items.json
+```
 
 Current JSON data files:
 - `backend/app/data/items.json`
