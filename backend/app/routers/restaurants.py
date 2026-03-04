@@ -2,8 +2,9 @@ from fastapi import APIRouter, status
 from typing import List
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
 from services.restaurants_service import list_restaurants, create_restaurant, delete_restaurant, update_restaurant, get_restaurant_by_id
-from services.menus_service import get_menus_by_restaurant_id
+from services.menus_service import get_menus_by_restaurant_id, delete_menu_items_by_restaurant_id
 from schemas.menu import Menu
+
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -29,5 +30,6 @@ def put_restaurant(restaurant_id: str, payload: RestaurantUpdate):
 
 @router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_restaurant(restaurant_id: str):
+    delete_menu_items_by_restaurant_id(restaurant_id) #delete menus first
     delete_restaurant(restaurant_id)
     return None
