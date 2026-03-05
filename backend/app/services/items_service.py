@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Dict, Any
+from typing import List
 from fastapi import HTTPException
 from ..schemas.item import Item, ItemCreate, ItemUpdate
 from ..repositories.items_repo import load_all, save_all
@@ -8,12 +8,21 @@ from ..repositories.items_repo import load_all, save_all
 def list_items() -> List[Item]:
     return [Item(**it) for it in load_all()]
 
+
+def _build_item(item_id: str, payload: ItemCreate | ItemUpdate) -> Item:
+    return Item(
+        id=item_id,
+        title=payload.title.strip(),
+        category=payload.category.strip(),
+        tags=payload.tags,
+    )
+
 def create_item(payload: ItemCreate) -> Item:
     items = load_all()
     new_id = str(uuid.uuid4())
     if any(it.get("id") == new_id for it in items):  # extremely unlikely, but consistent check
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    new_item = Item(id=new_id, title=payload.title.strip(), category=payload.category.strip(), tags=payload.tags)
+    new_item = _build_item(new_id, payload)
     items.append(new_item.dict())
     save_all(items)
     return new_item
@@ -29,12 +38,7 @@ def update_item(item_id: str, payload: ItemUpdate) -> Item:
     items = load_all()
     for idx, it in enumerate(items):
         if it.get("id") == item_id:
-            updated = Item(
-                id=item_id,
-                title=payload.title.strip(),
-                category=payload.category.strip(),
-                tags=payload.tags,
-            )
+            updated = _build_item(item_id, payload)
             items[idx] = updated.dict()
             save_all(items)
             return updated
@@ -46,4 +50,3 @@ def delete_item(item_id: str) -> None:
     if len(new_items) == len(items):
         raise HTTPException(status_code=404, detail=f"Item '{item_id}' not found")
     save_all(new_items)
-
