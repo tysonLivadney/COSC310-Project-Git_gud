@@ -15,7 +15,7 @@ from ..services.payment_service import (
 router = APIRouter(prefix="/payments", tags=["payments"])
 
 
-@router.post("/process", response_model=PaymentProcessResponse)
+@router.post("/process", response_model=PaymentProcessResponse, responses = { 402: {"description": "Payment declined"}})
 def process(payload: PaymentProcessRequest):
     return process_payment(payload)
 
@@ -24,9 +24,13 @@ def process(payload: PaymentProcessRequest):
 def get_all():
     return list_payments()
 
+@router.get("/{order_id}", response_model=List[PaymentRecord])
+def get_by_orderID(order_id: str):
+    payments = list_payments()
+    return [p for p in payments if p.order_id == order_id]
 
 @router.get("/{payment_id}", response_model=PaymentRecord)
-def get_one(payment_id: str):
+def get_by_paymentID(payment_id: str):
     payment = get_payment_by_id(payment_id)
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")

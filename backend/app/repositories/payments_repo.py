@@ -1,9 +1,10 @@
+import json
+import os
 from pathlib import Path
-import json, os
 from typing import List, Dict, Any
+#from ..config.paths import PAYMENTS_JSON_PATH as DATA_PATH
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "payments.json"
-
 
 def load_all() -> List[Dict[str, Any]]:
     if not DATA_PATH.exists():
