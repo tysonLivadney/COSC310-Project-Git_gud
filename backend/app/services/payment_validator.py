@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from decimal import Decimal
-from ..schemas.payment import PaymentProcessRequest
+from schemas.payment import PaymentProcessRequest
 
 class PaymentValidator:
     # Luhn algorithm implementation for card number validation

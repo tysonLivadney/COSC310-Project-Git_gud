@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 
-from ..schemas.payment import (
+from schemas.payment import (
     PaymentProcessRequest,
     PaymentProcessResponse,
     PaymentRecord,
 )
-from ..services.payment_service import (
+from services.payment_service import (
     process_payment,
     list_payments,
     get_payment_by_id,

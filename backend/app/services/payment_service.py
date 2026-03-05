@@ -1,10 +1,10 @@
 import uuid
 from typing import List
 from fastapi import HTTPException
-from ..repositories.payments_repo import load_all, save_all
-from .payment_validator import PaymentValidator
+from repositories.payments_repo import load_all, save_all
+from services.payment_validator import PaymentValidator
 
-from ..schemas.payment import (
+from schemas.payment import (
     PaymentProcessRequest,
     PaymentProcessResponse,
     PaymentRecord,
