@@ -14,7 +14,7 @@ def get_deliveries():
 @router.get("/{delivery_id}", response_model= Delivery)
 def get_delivery(delivery_id:int):
     try:
-        return delivery_service._get_delivery(delivery_id)
+        return delivery_service.get_delivery(delivery_id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
