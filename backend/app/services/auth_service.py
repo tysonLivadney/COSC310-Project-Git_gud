@@ -4,6 +4,7 @@
 
 import hashlib
 import hmac
+import logging
 import secrets
 import uuid
 from collections.abc import Callable
@@ -14,6 +15,8 @@ from app.repositories.sessions_repo import save_all as save_all_sessions
 from app.repositories.users_repo import load_all as load_all_users
 from app.repositories.users_repo import save_all as save_all_users
 from app.schemas.auth import LoginRequest, LoginResponse, RegisterRequest, Role, UserResponse
+
+logger = logging.getLogger(__name__)
 
 
 SESSION_DURATION_HOURS = 24
@@ -65,6 +68,7 @@ def register_user(payload: RegisterRequest) -> UserResponse:
     }
     users.append(user)
     save_all_users(users)
+    logger.info("user_registered id=%s email=%s role=%s", user["id"], normalized_email, payload.role)
     return _build_user_response(user)
 
 
@@ -92,6 +96,7 @@ def login_user(payload: LoginRequest) -> LoginResponse:
         sessions.append(session)
         save_all_sessions(sessions)
 
+        logger.info("login_success user_id=%s email=%s", user["id"], normalized_email)
         return LoginResponse(
             token=session["token"],
             token_type="bearer",
@@ -99,6 +104,7 @@ def login_user(payload: LoginRequest) -> LoginResponse:
             user=_build_user_response(user),
         )
 
+    logger.warning("login_failed email=%s", _normalize_email(payload.email))
     raise HTTPException(status_code=401, detail="Invalid email or password")
 
 def _extract_bearer_token(authorization: str | None) -> str:

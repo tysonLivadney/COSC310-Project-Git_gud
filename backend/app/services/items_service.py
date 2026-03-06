@@ -1,8 +1,11 @@
+import logging
 import uuid
 from typing import List
 from fastapi import HTTPException
 from app.schemas.item import Item, ItemCreate, ItemUpdate
 from app.repositories.items_repo import load_all, save_all
+
+logger = logging.getLogger(__name__)
 
 
 def list_items() -> List[Item]:
@@ -25,6 +28,7 @@ def create_item(payload: ItemCreate) -> Item:
     new_item = _build_item(new_id, payload)
     items.append(new_item.dict())
     save_all(items)
+    logger.info("item_created id=%s title=%s", new_id, payload.title)
     return new_item
 
 def get_item_by_id(item_id: str) -> Item:
@@ -50,3 +54,4 @@ def delete_item(item_id: str) -> None:
     if len(new_items) == len(items):
         raise HTTPException(status_code=404, detail=f"Item '{item_id}' not found")
     save_all(new_items)
+    logger.info("item_deleted id=%s", item_id)
