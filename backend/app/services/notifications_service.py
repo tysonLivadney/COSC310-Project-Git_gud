@@ -64,6 +64,36 @@ def delete_notification(delivery_id: str, notification_id: str) -> Notification:
                 save_all(temp)
                 return Notification(**removed)
         raise KeyError(f"Notification {notification_id} not found")
+
+notifications:dict[int,list[Notification]] = {}
+_next_id = 1
+
+def notify(delivery: Delivery, notification_type: NotificationType) -> Notification:
+    global _next_id
+    message = _build_message(delivery,notification_type)
+    notification = Notification(
+        id = _next_id,
+        delivery_id=delivery.id,
+        type=notification_type,
+        message=message,
+    )
+    if delivery.id not in notifications:
+        notifications[delivery.id].append(notification)
+        _next_id += 1
+        return notification
+    
+def get_notifications(delivery_id: int) -> list[Notification]:
+    return notifications.get(delivery_id,[])
+
+def mark_as_read(delivery_id:int, notification_id:int) -> Notification:
+    delivery_notifications = notifications.get(delivery_id, [])
+    for n in delivery_notifications:
+        if n.id == notification_id:
+            n.read = True
+            return n
+        raise KeyError(f"Notification {notification_id} not found")
+
+
     
     
 def _build_message(delivery: Delivery, notification_type: NotificationType) -> str:
