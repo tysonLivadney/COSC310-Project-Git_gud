@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from typing import List
-from schemas.item import Item, ItemCreate, ItemUpdate
-from schemas.auth import UserResponse
-from services.auth_service import require_roles
-from services.items_service import (
+from app.schemas.item import Item, ItemCreate, ItemUpdate
+from app.schemas.auth import UserResponse
+from app.services.auth_service import require_roles
+from app.services.items_service import (
     create_item,
     delete_item,
     get_item_by_id,

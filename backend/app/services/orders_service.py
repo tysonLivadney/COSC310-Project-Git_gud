@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import HTTPException
-from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
-from repositories.orders_repo import load_all, save_all
+from app.schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
+from app.repositories.orders_repo import load_all, save_all
 
 
 def list_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None) -> List[Order]:

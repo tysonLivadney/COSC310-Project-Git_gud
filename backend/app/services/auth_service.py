@@ -9,11 +9,11 @@ import uuid
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, Header, HTTPException
-from repositories.sessions_repo import load_all as load_all_sessions
-from repositories.sessions_repo import save_all as save_all_sessions
-from repositories.users_repo import load_all as load_all_users
-from repositories.users_repo import save_all as save_all_users
-from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, Role, UserResponse
+from app.repositories.sessions_repo import load_all as load_all_sessions
+from app.repositories.sessions_repo import save_all as save_all_sessions
+from app.repositories.users_repo import load_all as load_all_users
+from app.repositories.users_repo import save_all as save_all_users
+from app.schemas.auth import LoginRequest, LoginResponse, RegisterRequest, Role, UserResponse
 
 
 SESSION_DURATION_HOURS = 24

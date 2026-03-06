@@ -6,3 +6,6 @@ __pycache__/
 #ignore environment files
 venv/
 .env
+
+#local JSON data files
+app/data/*.json
