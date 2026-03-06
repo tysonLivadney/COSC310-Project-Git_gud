@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from typing import List, Optional
-from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
-from services.orders_service import (
+from app.schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
+from app.services.orders_service import (
     list_orders,
     create_order,
     get_order_by_id,

@@ -1,7 +1,14 @@
+import logging
+
 from fastapi import FastAPI
-from routers.auth import router as auth_router
-from routers.items import router as items_router
-from routers.orders import router as orders_router
+from app.routers.auth import router as auth_router
+from app.routers.items import router as items_router
+from app.routers.orders import router as orders_router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 
 app = FastAPI()
 
