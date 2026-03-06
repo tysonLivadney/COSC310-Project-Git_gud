@@ -7,7 +7,7 @@ class RestaurantCreate(BaseModel):
     address: str = Field(..., min_length=5, max_length=50)
     description: str = Field(..., min_length=10, max_length=300)
     phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$') #ensure correct phone format w/ regex
-    tags: List[str] = Field(default=[], max_items=10)
+    tags: List[str] = Field(default=[], max_length=10)
 
 class Restaurant(RestaurantCreate):
     id: str
@@ -17,5 +17,5 @@ class RestaurantUpdate(BaseModel):
     address: Optional[str] = Field(None, min_length=5, max_length=50)
     description: Optional[str] = Field(None, min_length=10, max_length=300)
     phone: Optional[str] = Field(None, pattern=r'^\+?[0-9]{7,15}$')
-    tags: Optional[List[str]] = Field(default=[], max_items=10)
+    tags: Optional[List[str]] = Field(default=[], max_length=10)
     
