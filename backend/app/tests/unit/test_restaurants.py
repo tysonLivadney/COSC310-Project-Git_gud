@@ -18,6 +18,11 @@ VALID_RESTAURANT = {
     "tags": ["tag1", "tag2"]
 }
 
+VALID_MENU = {
+    "title": "Test Menu",
+    "description": "Example of a description"
+}
+
 #save and restore content of storage files per test
 @pytest.fixture(autouse=True)
 def save_and_restore():
@@ -44,6 +49,11 @@ def test_post_valid_restaurant():
 
 def test_post_no_name():
     invalid_restaurant = {**VALID_RESTAURANT, "name": ""}
+    response = client.post("/restaurants", json=invalid_restaurant)
+    assert response.status_code == 422
+
+def test_name_too_long():
+    invalid_restaurant = {**VALID_RESTAURANT, "name": "123456789012345678901234567890123456789012345678901"}
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
@@ -85,5 +95,40 @@ def test_get_restaurant_by_id():
 def test_get_restaurant_invalid_id():
     response = client.get("/restaurants/00000")
     assert response.status_code == 404
+
+#PUT tests
+def test_update_restaurant_name():
+    restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
+    response = client.put(f"/restaurants/{restaurant['id']}", json = {**VALID_RESTAURANT, "name":"Updated name"})
+    assert response.status_code == 200
+    assert response.json()["name"] == "Updated name"
+
+def test_update_invalid_id():
+    restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
+    response = client.put(f"/restaurants/00000", json = {**VALID_RESTAURANT, "name":"Updated name"})
+    assert response.status_code == 404
+
+def test_restaurant_invalid_phone():
+    restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
+    response = client.put(f"/restaurants/{restaurant['id']}", json = {**VALID_RESTAURANT, "phone":"f1234567890"})
+    assert response.status_code == 422
+
+#DELETE tests
+def test_delete_restaurant():
+    restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
+    response = client.delete(f"/restaurants/{restaurant['id']}")
+    assert response.status_code == 204
+    assert client.get(f"/restaurants/{restaurant['id']}").status_code == 404
+
+def test_delete_restaurant_not_found():
+    response = client.delete("/restaurants/00000")
+    assert response.status_code == 404
+#should delete menus under it
+def test_delete_cascade():
+    restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
+    menu = client.post("/menus", json = {**VALID_MENU, "restaurant_id":restaurant["id"]}).json()
+    response = client.delete(f"/restaurants/{restaurant['id']}")
+    assert client.get(f"/menus/{menu['id']}").status_code == 404
+
     
 
