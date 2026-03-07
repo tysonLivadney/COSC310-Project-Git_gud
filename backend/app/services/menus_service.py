@@ -23,7 +23,7 @@ def create_menu(payload: MenuCreate) -> Menu:
         description=payload.description.strip(),
         restaurant_id=payload.restaurant_id.strip()
     )
-    menus.append(new_menu.dict())
+    menus.append(new_menu.model_dump())
     save_all(menus)
     return new_menu
 
