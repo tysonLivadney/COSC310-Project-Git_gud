@@ -1,12 +1,5 @@
-from services.restaurants_service import *
-from repositories.restaurants_repo import save_all as save_restaurants, load_all as load_restaurants
-from repositories.menus_repo import save_all as save_menus, load_all as load_menus
-from repositories.menu_items_repo import save_all as save_menu_items, load_all as load_menu_items
-import pytest
-from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 from main import app
-from pathlib import Path
 
 client = TestClient(app)
 
@@ -19,24 +12,9 @@ VALID_RESTAURANT = {
 }
 
 VALID_MENU = {
-    "title": "Test Menu",
-    "description": "Example of a description"
+    "name": "Test Menu",
+    "description": "Test menu description that is long enough.",
 }
-
-#save and restore content of storage files per test
-@pytest.fixture(autouse=True)
-def save_and_restore():
-    restaurants = load_restaurants()
-    menus = load_menus()
-    menu_items = load_menu_items()
-    #wipe restaurants.json
-    save_menu_items([])
-    save_menus([])
-    save_restaurants([])
-    yield
-    save_restaurants(restaurants)
-    save_menus(menus)
-    save_menu_items(menu_items)
 
 #POST tests
 def test_post_valid_restaurant():

@@ -1,0 +1,44 @@
+from repositories.restaurants_repo import save_all as save_restaurants, load_all as load_restaurants
+from repositories.menus_repo import save_all as save_menus, load_all as load_menus
+from repositories.menu_items_repo import save_all as save_menu_items, load_all as load_menu_items
+from fastapi.testclient import TestClient
+from fastapi import FastAPI, status
+import pytest
+from main import app
+
+client = TestClient(app)
+
+VALID_RESTAURANT = {
+    "name": "Test Restaurant",
+    "address": " 123 Address ", #testing that strip removes whitespace
+    "description": "Example of a description.",
+    "phone": "+123456789",
+    "tags": ["tag1", "tag2"]
+}
+
+VALID_MENU = {
+    "name": "Test Menu",
+    "description": "Test menu description that is long enough.",
+}
+#save and restore content of storage files per test
+@pytest.fixture(autouse=True)
+def save_and_restore():
+    restaurants = load_restaurants()
+    menus = load_menus()
+    menu_items = load_menu_items()
+    save_menu_items([])
+    save_menus([])
+    save_restaurants([])
+    yield
+    save_restaurants(restaurants)
+    save_menus(menus)
+    save_menu_items(menu_items)
+
+#create test menu/restaurants
+@pytest.fixture
+def test_restaurant():
+    return client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+@pytest.fixture
+def test_menu(test_restaurant):
+    return client.post("/menus", json={**VALID_MENU,"restaurant_id": test_restaurant["id"]}).json()
