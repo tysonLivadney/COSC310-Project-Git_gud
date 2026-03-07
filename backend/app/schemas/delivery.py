@@ -25,4 +25,4 @@ class Delivery(BaseModel):
 
 Delivery.model_rebuild()
 
-    
+
