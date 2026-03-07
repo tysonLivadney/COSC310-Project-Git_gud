@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from typing import List
 from schemas.menu import Menu, MenuCreate, MenuUpdate
 from schemas.menu_item import MenuItem
-from services.menus_service import list_menus, create_menu, delete_menu, update_menu, get_menu_by_id, get_menus_by_restaurant_id
+from services.menus_service import list_menus, create_menu, delete_menu, update_menu, get_menu_by_id
 from services.menu_items_service import get_menu_items_by_menu_id, delete_menu_items_by_menu_id
 
 router = APIRouter(prefix="/menus", tags=["menus"])

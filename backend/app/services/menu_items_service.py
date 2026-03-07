@@ -20,13 +20,13 @@ def create_menu_item(payload: MenuItemCreate) -> MenuItem:
         raise HTTPException(status_code=404, detail=f"Menu '{payload.menu_id}' not found")
     new_menu_item = MenuItem(
         id=new_id, 
-        title=payload.title.strip(), 
+        name=payload.name.strip(), 
         description=payload.description.strip(),
         price=payload.price,
         in_stock=payload.in_stock,
         menu_id=payload.menu_id.strip()
     )
-    menu_items.append(new_menu_item.dict())
+    menu_items.append(new_menu_item.model_dump())
     save_all(menu_items)
     return new_menu_item
 
@@ -53,13 +53,14 @@ def update_menu_item(menu_item_id: str, payload: MenuItemUpdate) -> MenuItem:
     for idx, m in enumerate(menu_items):
         if m.get("id") == menu_item_id:
             updated = MenuItem(
-                title=payload.title.strip(),
+                id = menu_item_id,
+                name=payload.name.strip(),
                 description=payload.description.strip(), 
                 price=payload.price,
                 in_stock=payload.in_stock,
                 menu_id=m.get("menu_id")
             )
-            menu_items[idx] = updated.dict()
+            menu_items[idx] = updated.model_dump()
             save_all(menu_items)
             return updated
     raise HTTPException(status_code=404, detail=f"Menu Item '{menu_item_id}' not found")
