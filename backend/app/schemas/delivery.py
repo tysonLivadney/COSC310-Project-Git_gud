@@ -24,3 +24,5 @@ class Delivery(BaseModel):
         updated_at: datetime = Field(default_factory=datetime.now)
 
 Delivery.model_rebuild()
+
+
