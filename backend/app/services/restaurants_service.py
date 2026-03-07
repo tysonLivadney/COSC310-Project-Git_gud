@@ -30,13 +30,14 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaura
     for idx, r in enumerate(restaurants):
         if r.get("id") == restaurant_id:
             updated = Restaurant(
+                id=restaurant_id,
                 name=payload.name.strip(),
                 address=payload.address.strip(),
                 description=payload.description.strip(),
                 phone=payload.phone.strip(),
                 tags=payload.tags,
             )
-            restaurants[idx] = updated.dict()
+            restaurants[idx] = updated.model_dump()
             save_all(restaurants)
             return updated
     raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_id}' not found")

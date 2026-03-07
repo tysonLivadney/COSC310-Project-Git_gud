@@ -8,7 +8,6 @@ class RestaurantCreate(BaseModel):
     description: str = Field(..., min_length=10, max_length=300)
     phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$') #ensure correct phone format w/ regex
     tags: List[str] = Field(default=[], max_length=10)
-
 class Restaurant(RestaurantCreate):
     id: str
 
