@@ -19,7 +19,7 @@ def create_menu(payload: MenuCreate) -> Menu:
         raise HTTPException(status_code=404, detail=f"Restaurant '{payload.restaurant_id}' not found")
     new_menu = Menu(
         id=new_id, 
-        title=payload.title.strip(), 
+        name=payload.name.strip(), 
         description=payload.description.strip(),
         restaurant_id=payload.restaurant_id.strip()
     )
@@ -43,11 +43,12 @@ def update_menu(menu_id: str, payload: MenuUpdate) -> Menu:
     for idx, m in enumerate(menus):
         if m.get("id") == menu_id:
             updated = Menu(
-                title=payload.title.strip(),
+                id = menu_id,
+                name=payload.name.strip(),
                 description=payload.description.strip(),
-                restaurant_id=payload.restaurant_id.strip()
+                restaurant_id = m.get("restaurant_id")
             )
-            menus[idx] = updated.dict()
+            menus[idx] = updated.model_dump()
             save_all(menus)
             return updated
     raise HTTPException(status_code=404, detail=f"Menu '{menu_id}' not found")
