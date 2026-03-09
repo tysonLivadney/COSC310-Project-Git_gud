@@ -67,6 +67,7 @@ VALID_RESTAURANT = {
     "address": " 123 Address ", #testing that strip removes whitespace
     "description": "Example of a description.",
     "phone": "+123456789",
+    "rating": 5,
     "tags": ["tag1", "tag2"]
 }
 
