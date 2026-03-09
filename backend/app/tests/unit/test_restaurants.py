@@ -8,6 +8,7 @@ VALID_RESTAURANT = {
     "address": " 123 Address ", #testing that strip removes whitespace
     "description": "Example of a description.",
     "phone": "+123456789",
+    "rating": 5,
     "tags": ["tag1", "tag2"]
 }
 
@@ -108,5 +109,6 @@ def test_delete_cascade():
     response = client.delete(f"/restaurants/{restaurant['id']}")
     assert client.get(f"/menus/{menu['id']}").status_code == 404
 
-    
+#Additional search feature tests
+
 

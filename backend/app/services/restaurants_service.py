@@ -13,7 +13,15 @@ def create_restaurant(payload: RestaurantCreate) -> Restaurant:
     if any(r.get("id") == new_id for r in restaurants): #unlikely safety check
         raise HTTPException(status_code=409, detail="ID collision; retry.")
     #strip() removes whitespace from strings
-    new_restaurant = Restaurant(id=new_id, name=payload.name.strip(), address=payload.address.strip(), description=payload.description.strip(), phone=payload.phone.strip(), tags=payload.tags)
+    new_restaurant = Restaurant(
+        id=new_id,
+        name=payload.name.strip(),
+        address=payload.address.strip(), 
+        description=payload.description.strip(),
+        phone=payload.phone.strip(),
+        rating=payload.rating, 
+        tags=payload.tags
+        )
     restaurants.append(new_restaurant.model_dump())
     save_all(restaurants)
     return new_restaurant
@@ -35,6 +43,7 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaura
                 address=payload.address.strip(),
                 description=payload.description.strip(),
                 phone=payload.phone.strip(),
+                rating=payload.rating,
                 tags=payload.tags,
             )
             restaurants[idx] = updated.model_dump()
