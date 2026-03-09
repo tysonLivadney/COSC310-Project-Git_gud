@@ -14,7 +14,8 @@ VALID_RESTAURANT = {
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
-    "tags": ["tag1", "tag2"]
+    "tags": ["tag1", "tag2"],
+    "estimated_delivery_time": 10
 }
 
 VALID_MENU = {

@@ -20,7 +20,8 @@ def create_restaurant(payload: RestaurantCreate) -> Restaurant:
         description=payload.description.strip(),
         phone=payload.phone.strip(),
         rating=payload.rating, 
-        tags=payload.tags
+        tags=payload.tags,
+        estimated_delivery_time=payload.estimated_delivery_time
         )
     restaurants.append(new_restaurant.model_dump())
     save_all(restaurants)
@@ -32,6 +33,14 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
         if r.get("id") == restaurant_id:
             return Restaurant(**r)
     raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_id}' not found")
+
+def search_restaurants(name:str = None, cuisine: str = None) -> List[Restaurant]:
+    restaurants = load_all()
+    if cuisine:
+        restaurants = [r for r in load_all() if cuisine.lower() in[t.lower() for t in r["tags"]]] #searches for matches in restaurant tags
+    if name:
+        restaurants = [r for r in load_all() if name.lower() in r["name"].lower()]
+    return [Restaurant(**r) for r in restaurants]
 
 def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaurant:
     restaurants = load_all()
@@ -45,6 +54,7 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaura
                 phone=payload.phone.strip(),
                 rating=payload.rating,
                 tags=payload.tags,
+                estimated_delivery_time=payload.estimated_delivery_time
             )
             restaurants[idx] = updated.model_dump()
             save_all(restaurants)
@@ -57,4 +67,5 @@ def delete_restaurant(restaurant_id: str) -> None:
     if len(new_restaurants) == len(restaurants):
         raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_id}' not found")
     save_all(new_restaurants)
+
     
