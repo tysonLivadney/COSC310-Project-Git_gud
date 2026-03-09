@@ -24,6 +24,8 @@ def get_restaurant(restaurant_id: str):
 def get_menus_by_restaurant(restaurant_id: str):
     return get_menus_by_restaurant_id(restaurant_id)
 
+#@router.get("/{restaurant_name}", response_model)
+
 @router.put("/{restaurant_id}", response_model=Restaurant)
 def put_restaurant(restaurant_id: str, payload: RestaurantUpdate):
     return update_restaurant(restaurant_id, payload)
