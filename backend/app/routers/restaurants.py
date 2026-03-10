@@ -17,7 +17,7 @@ def post_restaurant(payload: RestaurantCreate):
     return create_restaurant(payload)
 
 @router.get("/search", response_model=List[Restaurant])
-def get_restaurants_filtered(
+def search_restaurants(
     name: str = None, cuisine: str = None, 
     limit: int = Query(10, ge=1, le=20, description="Number of items to return"),
     offset: int = Query(0, ge=0, description="Number of items to skip")):
