@@ -16,3 +16,9 @@ class Review(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
     created_at: str
+
+
+class RatingSummary(BaseModel):
+    restaurant_id: int
+    average_rating: float
+    total_reviews: int
