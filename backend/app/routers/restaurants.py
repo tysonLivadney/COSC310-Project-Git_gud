@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Query
 from typing import List
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
 from services.restaurants_service import list_restaurants, create_restaurant, delete_restaurant, update_restaurant, get_restaurant_by_id, search_restaurants
@@ -17,8 +17,11 @@ def post_restaurant(payload: RestaurantCreate):
     return create_restaurant(payload)
 
 @router.get("/search", response_model=List[Restaurant])
-def get_restaurants_filtered(name: str = None, cuisine: str = None):
-    return search_restaurants(name=name, cuisine=cuisine)
+def get_restaurants_filtered(
+    name: str = None, cuisine: str = None, 
+    limit: int = Query(10, ge=1, le=20, description="Number of items to return"),
+    offset: int = Query(0, ge=0, description="Number of items to skip")):
+    return search_restaurants(name=name, cuisine=cuisine, limit=limit, offset=offset)
 
 @router.get("/{restaurant_id}", response_model=Restaurant)
 def get_restaurant(restaurant_id: str):
