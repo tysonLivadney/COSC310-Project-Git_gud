@@ -11,6 +11,7 @@ from routers.restaurants import router as restaurants_router
 from routers.menus import router as menus_router
 from routers.menu_items import router as menu_items_router
 from routers.admin import router as admin_router
+from routers.reviews import router as reviews_router
 
 app = FastAPI()
 
@@ -32,3 +33,4 @@ app.include_router(auth_router)
 app.include_router(items_router)
 app.include_router(delivery_router)
 app.include_router(admin_router)
+app.include_router(reviews_router)
