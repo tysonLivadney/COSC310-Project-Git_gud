@@ -1,7 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Query
 from typing import List
 from schemas.menu_item import MenuItem, MenuItemCreate, MenuItemUpdate
-from services.menu_items_service import list_menu_items, create_menu_item, delete_menu_item, update_menu_item, get_menu_item_by_id
+from services.menu_items_service import list_menu_items, create_menu_item, delete_menu_item, update_menu_item, get_menu_item_by_id, search_menu_items
 
 router = APIRouter(prefix="/menu-items", tags=["menu-items"])
 
@@ -12,6 +12,16 @@ def get_menu_items():
 @router.post("", response_model=MenuItem, status_code=201)
 def post_menu_item(payload: MenuItemCreate):
     return create_menu_item(payload)
+
+@router.get("/search", response_model = List[MenuItem])
+def get_menu_items_filtered(
+    menu_id: str,
+    name: str = None, cuisine: str = None,
+    max_price: int = None, 
+    limit: int = Query(10, ge=1, le=20, description="Number of items to return"),
+    offset: int = Query(0, ge=0, description="Number of items to skip")):
+    return search_menu_items(menu_id=menu_id, name=name, max_price=max_price, limit=limit, offset=offset)
+
 
 @router.get("/{menu_item_id}", response_model=MenuItem)
 def get_menu_item(menu_item_id: str):
