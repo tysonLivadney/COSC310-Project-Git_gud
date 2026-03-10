@@ -46,8 +46,11 @@ def get_menu_items_by_restaurant_id(restaurant_id: str) -> List[MenuItem]:
     menu_ids = [m["id"] for m in menus if m.get("restaurant_id") == restaurant_id]
     return [MenuItem(**m) for m in menu_items if m.get("menu_id") in menu_ids]
 
-def search_menu_items(menu_id:str, name:str = None, max_price: int = None, only_in_stock: bool = None, limit=None, offset=None) -> List[MenuItem]:
-    menu_items = get_menu_items_by_menu_id(menu_id)
+def search_menu_items(menu_id:str = None, name:str = None, max_price: int = None, only_in_stock: bool = None, limit=None, offset=None) -> List[MenuItem]:
+    if menu_id:
+        menu_items = [r.model_dump() for r in get_menu_items_by_menu_id(menu_id)]
+    else:
+        menu_items = load_all()
     if only_in_stock:
         menu_items = [r for r in menu_items if r["in_stock"] == True]
     if name:
