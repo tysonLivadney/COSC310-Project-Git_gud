@@ -5,7 +5,7 @@ client = TestClient(app)
 
 VALID_RESTAURANT = {
     "name": "Test Restaurant",
-    "address": " 123 Address ", #testing that strip removes whitespace
+    "address": " 123 Address ",
     "description": "Example of a description.",
     "phone": "+123456789",
     "tags": ["tag1", "tag2"]
@@ -52,7 +52,7 @@ def test_get_menu_items():
 
 def test_get_menu_items_empty_file():
     response = client.get("/menu-items")
-    assert response.status_code == 200 #returns empty list
+    assert response.status_code == 200
     assert len(response.json()) == 0
 
 def test_get_menu_item_by_id(test_menu_item):

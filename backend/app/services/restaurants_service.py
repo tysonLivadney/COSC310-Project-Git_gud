@@ -10,9 +10,8 @@ def list_restaurants() -> List[Restaurant]:
 def create_restaurant(payload: RestaurantCreate) -> Restaurant:
     restaurants = load_all()
     new_id = str(uuid.uuid4())
-    if any(r.get("id") == new_id for r in restaurants): #unlikely safety check
+    if any(r.get("id") == new_id for r in restaurants):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    #strip() removes whitespace from strings
     new_restaurant = Restaurant(
         id=new_id,
         name=payload.name.strip(),
@@ -37,9 +36,9 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 def search_restaurants(name:str = None, cuisine: str = None) -> List[Restaurant]:
     restaurants = load_all()
     if cuisine:
-        restaurants = [r for r in load_all() if cuisine.lower() in[t.lower() for t in r["tags"]]] #searches for matches in restaurant tags
+        restaurants = [r for r in restaurants if cuisine.lower() in[t.lower() for t in r["tags"]]]
     if name:
-        restaurants = [r for r in load_all() if name.lower() in r["name"].lower()]
+        restaurants = [r for r in restaurants if name.lower() in r["name"].lower()]
     return [Restaurant(**r) for r in restaurants]
 
 def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaurant:
