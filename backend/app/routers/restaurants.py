@@ -16,6 +16,10 @@ def get_restaurants():
 def post_restaurant(payload: RestaurantCreate):
     return create_restaurant(payload)
 
+@router.get("/search", response_model=List[Restaurant])
+def get_restaurants_filtered(name: str = None, cuisine: str = None):
+    return search_restaurants(name=name, cuisine=cuisine)
+
 @router.get("/{restaurant_id}", response_model=Restaurant)
 def get_restaurant(restaurant_id: str):
     return get_restaurant_by_id(restaurant_id)
@@ -23,10 +27,6 @@ def get_restaurant(restaurant_id: str):
 @router.get("/{restaurant_id}/menus", response_model=List[Menu])
 def get_menus_by_restaurant(restaurant_id: str):
     return get_menus_by_restaurant_id(restaurant_id)
-
-@router.get("/search", response_model=List[Restaurant])
-def get_restaurants_filtered(name: str = None, cuisine: str = None):
-    return search_restaurants(name=name, cuisine=cuisine)
 
 @router.put("/{restaurant_id}", response_model=Restaurant)
 def put_restaurant(restaurant_id: str, payload: RestaurantUpdate):

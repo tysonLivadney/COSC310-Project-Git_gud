@@ -64,7 +64,7 @@ client = TestClient(app)
 
 VALID_RESTAURANT = {
     "name": "Test Restaurant",
-    "address": " 123 Address ", #testing that strip removes whitespace
+    "address": " 123 Address ",
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
@@ -84,7 +84,6 @@ VALID_MENU_ITEM = {
     "in_stock": True
 }
 
-#save and restore content of storage files per test
 @pytest.fixture(autouse=True)
 def save_and_restore():
     restaurants = load_restaurants()
@@ -98,7 +97,6 @@ def save_and_restore():
     save_menus(menus)
     save_menu_items(menu_items)
 
-#create test menu/restaurants/menu items
 @pytest.fixture
 def test_restaurant():
     return client.post("/restaurants", json=VALID_RESTAURANT).json()
