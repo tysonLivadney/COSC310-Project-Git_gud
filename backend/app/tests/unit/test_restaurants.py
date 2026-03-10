@@ -5,11 +5,11 @@ client = TestClient(app)
 
 VALID_RESTAURANT = {
     "name": "Test Restaurant",
-    "address": " 123 Address ", #testing that strip removes whitespace
+    "address": " 123 Address ",
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
-    "tags": ["tag1", "tag2"],
+    "tags": ["italian", "pizza"],
     "estimated_delivery_time": 10
 }
 
@@ -38,7 +38,7 @@ def test_name_too_long():
     assert response.status_code == 422
 
 def test_post_invalid_phone():
-    invalid_restaurant = {**VALID_RESTAURANT, "phone": "a123456789"} #characters not allowed
+    invalid_restaurant = {**VALID_RESTAURANT, "phone": "a123456789"}
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
@@ -63,7 +63,7 @@ def test_get_restaurants():
 
 def test_get_restaurants_empty_file():
     response = client.get("/restaurants")
-    assert len(response.json()) == 0 #returns empty list if no restaurants
+    assert len(response.json()) == 0
 
 def test_get_restaurant_by_id():
     testaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
@@ -111,5 +111,58 @@ def test_delete_cascade():
     assert client.get(f"/menus/{menu['id']}").status_code == 404
 
 #Additional search feature tests
+def test_search_restaurants_name_only():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
 
+    response = client.get("/restaurants/search?name=tEst+RestauranT")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
 
+def test_search_restaurants_cuisine_only():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+    response = client.get("/restaurants/search?cuisine=pizza")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_search_name_and_cuisine():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+    response = client.get("/restaurants/search?name=test+restaurant&cuisine=italian")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_search_restaurants_no_matches():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+    response = client.get("/restaurants/search?name=abc")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+def test_search_restaurants_one_matches():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+    response = client.get("/restaurants/search?name=abc&cuisine=pizza")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+def test_search_restaurants_no_search():
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+    client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+    response = client.get("/restaurants/search")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_one_match():
+    client.post("/restaurants", json=VALID_RESTAURANT)
+    client.post("/restaurants", json={**VALID_RESTAURANT, "name": "restaurant 2"})
+
+    response = client.get("/restaurants/search?name=restaurant+2")
+    assert response.status_code == 200
+    assert len(response.json()) == 1

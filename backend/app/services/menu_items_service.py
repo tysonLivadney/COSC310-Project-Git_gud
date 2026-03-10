@@ -15,7 +15,6 @@ def create_menu_item(payload: MenuItemCreate) -> MenuItem:
     new_id = str(uuid.uuid4())
     if any(m.get("id") == new_id for m in menu_items):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    #ensure menu item is attached to existing menu
     if not any(r["id"] == payload.menu_id for r in load_menus()):
         raise HTTPException(status_code=404, detail=f"Menu '{payload.menu_id}' not found")
     new_menu_item = MenuItem(
@@ -72,11 +71,9 @@ def delete_menu_item(menu_item_id: str) -> None:
         raise HTTPException(status_code=404, detail=f"Menu Item '{menu_item_id}' not found")
     save_all(new_menu_items)
 
-#cascade delete items when menu is deleted
 def delete_menu_items_by_menu_id(menu_id: str) -> None:
     menu_items = load_all()
     new_menu_items = [m for m in menu_items if m.get("menu_id") != menu_id]
-    #no http exception since items may not exist
     save_all(new_menu_items)
 
 
