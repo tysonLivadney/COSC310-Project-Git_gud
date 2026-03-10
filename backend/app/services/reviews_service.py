@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional
 from fastapi import HTTPException
-from schemas.review import Review, ReviewCreate
+from schemas.review import Review, ReviewCreate, RatingSummary
 from repositories.reviews_repo import load_all, save_all
 from repositories.orders_repo import load_all as load_all_orders
 
@@ -43,3 +43,34 @@ def create_review(payload: ReviewCreate, user_id: str) -> Review:
     reviews.append(review.dict())
     save_all(reviews)
     return review
+
+
+def get_reviews_by_restaurant(restaurant_id: int, sort: Optional[str] = None) -> List[Review]:
+    reviews = load_all()
+    filtered = [Review(**r) for r in reviews if r.get("restaurant_id") == restaurant_id]
+
+    if sort == "highest":
+        filtered.sort(key=lambda r: r.rating, reverse=True)
+    elif sort == "lowest":
+        filtered.sort(key=lambda r: r.rating)
+    else:
+        filtered.sort(key=lambda r: r.created_at, reverse=True)
+
+    return filtered
+
+
+def get_rating_summary(restaurant_id: int) -> RatingSummary:
+    reviews = load_all()
+    filtered = [r for r in reviews if r.get("restaurant_id") == restaurant_id]
+
+    total = len(filtered)
+    if total == 0:
+        average = 0.0
+    else:
+        average = round(sum(r["rating"] for r in filtered) / total, 2)
+
+    return RatingSummary(
+        restaurant_id=restaurant_id,
+        average_rating=average,
+        total_reviews=total,
+    )
