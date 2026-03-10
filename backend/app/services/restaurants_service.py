@@ -1,6 +1,6 @@
 import uuid
 from typing import List
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
 from repositories.restaurants_repo import load_all, save_all
 
@@ -33,13 +33,13 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
             return Restaurant(**r)
     raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_id}' not found")
 
-def search_restaurants(name:str = None, cuisine: str = None) -> List[Restaurant]:
+def search_restaurants(name:str = None, cuisine: str = None, limit=None, offset=None) -> List[Restaurant]:
     restaurants = load_all()
     if cuisine:
         restaurants = [r for r in restaurants if cuisine.lower() in[t.lower() for t in r["tags"]]]
     if name:
         restaurants = [r for r in restaurants if name.lower() in r["name"].lower()]
-    return [Restaurant(**r) for r in restaurants]
+    return [Restaurant(**r) for r in restaurants[offset: offset+limit]]
 
 def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaurant:
     restaurants = load_all()
