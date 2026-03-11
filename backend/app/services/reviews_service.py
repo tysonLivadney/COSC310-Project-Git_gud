@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import HTTPException
-from schemas.review import Review, ReviewCreate, RatingSummary
+from schemas.review import Review, ReviewCreate, RatingSummary, RestaurantRatingsView
 from repositories.reviews_repo import load_all, save_all
 from repositories.orders_repo import load_all as load_all_orders
 
@@ -73,4 +73,15 @@ def get_rating_summary(restaurant_id: int) -> RatingSummary:
         restaurant_id=restaurant_id,
         average_rating=average,
         total_reviews=total,
+    )
+
+
+def get_restaurant_ratings_view(restaurant_id: int, sort: Optional[str] = None) -> RestaurantRatingsView:
+    summary = get_rating_summary(restaurant_id)
+    reviews = get_reviews_by_restaurant(restaurant_id, sort)
+    return RestaurantRatingsView(
+        restaurant_id=restaurant_id,
+        average_rating=summary.average_rating,
+        total_reviews=summary.total_reviews,
+        reviews=reviews,
     )
