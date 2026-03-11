@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from typing import List, Optional
 from schemas.review import Review, ReviewCreate, RatingSummary
 from schemas.auth import UserResponse
-from services.auth_service import get_current_user
+from services.auth_service import require_roles
 from services.reviews_service import create_review, get_reviews_by_restaurant, get_rating_summary
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/reviews", tags=["reviews"])
 @router.post("", response_model=Review, status_code=status.HTTP_201_CREATED)
 def post_review(
     payload: ReviewCreate,
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_roles("user")),
 ):
     return create_review(payload, current_user.id)
 
