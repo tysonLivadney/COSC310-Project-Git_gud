@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
 
@@ -6,6 +6,14 @@ class ReviewCreate(BaseModel):
     order_id: str
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
+
+    @field_validator("comment")
+    @classmethod
+    def normalize_comment(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped if stripped else None
 
 
 class Review(BaseModel):
