@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import List, Optional
 
 
 class ReviewCreate(BaseModel):
@@ -30,3 +30,10 @@ class RatingSummary(BaseModel):
     restaurant_id: int
     average_rating: float
     total_reviews: int
+
+
+class RestaurantRatingsView(BaseModel):
+    restaurant_id: int
+    average_rating: float
+    total_reviews: int
+    reviews: List[Review]
