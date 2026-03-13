@@ -1,0 +1,35 @@
+Group Name: GitGud
+Project Name: 310 Food delivery app
+Sprint #: 3
+Date: [09/03/2026]
+Meeting Type: Weekly Scrum
+
+Attendees:
+- Tyson Livadney
+- Porter de Bosch Kemper
+- Ahab Masud Siddiqui
+- Bao Tran
+- Jeet Sachin Vaidya
+
+----------------------------------------
+1. What was completed since last meeting:
+- Several bugfixes 
+- Near completion of Feature/Notifications
+- Completion of menu items
+- Completion of order total
+- Testing for features 
+
+2. What we will work on next:
+- FR3 - searching menus/restaurants
+- FR9 - rate/review
+- FR10 - additional admin features
+- Addition of testing to features that are missing it
+- Completion of pull requests
+
+3. Blockers / Issues:
+- Topics for the stage of development that we are currently required to be doing are not discussed in class until after we are passed that point in development
+----------------------------------------
+Notes:
+- None important enough to note
+
+Next Meeting: [16/03/2026]
