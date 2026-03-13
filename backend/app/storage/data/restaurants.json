@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Test Restaurant",
+    "address": "123 Address",
+    "description": "Example of a description.",
+    "phone": "+123456789",
+    "tags": [
+      "tag1",
+      "tag2"
+    ],
+    "id": "16f126be-ddb0-4da0-86ef-f4890c42ec0e"
+  },
+  {
+    "name": "Test Restaurant",
+    "address": "123 Address",
+    "description": "Example of a description.",
+    "phone": "+123456789",
+    "tags": [
+      "tag1",
+      "tag2"
+    ],
+    "id": "26029966-59fc-4168-b0f6-31c3236a8b8e"
+  }
+]
