@@ -1,0 +1,165 @@
+[
+  {
+    "id": "1ff75437-da8e-4d0d-8ab9-3b0d81cc2d8e",
+    "title": "Burger",
+    "category": "Food",
+    "tags": [
+      "fast",
+      "lunch"
+    ]
+  },
+  {
+    "id": "286509a2-685a-4eca-aa59-5922f14c27b9",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "18e42544-b524-4651-864a-b64dd0535b9f",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "bc6876b2-04a8-4c97-afe0-cfb0aa32cb42",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "0294ec75-a69c-47e3-8845-b8ed5c53f684",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "7c5c4d79-5db1-42d4-a031-c78e493b7118",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "41811b86-70dc-44c4-9053-28d66cc5500e",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "2b03e6e2-e29b-4d3b-986a-b09d36898156",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "50ef153c-2b76-4c31-b66e-82b1c172b542",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "f75797b3-66a4-413c-9904-4f5b594e8ba0",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "5a4dd7d6-b304-4f2c-9c6e-eef4453df0a0",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "13e08d3b-8e56-44b7-a272-74aa6786a368",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "d972aef5-720e-478c-bfcb-abd30d767a2b",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "dd60e562-1a12-4033-83e0-ac9ab5d4ab98",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "c9e12214-d9fe-4a6c-8a44-c727e5dacd7d",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "bc183038-b9e4-44d5-b436-a8071a0248c5",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "8167e6d3-84bb-4e58-bf69-6fc9190b38a6",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "9543a429-fa68-450c-833d-a1fc48414fe7",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "da1813a9-29f8-4d22-bb73-a2ae54cea202",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "eb030719-d445-4100-aad2-8d27665bb7cc",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "66ef3bab-9b45-4693-8fd5-c131f2ec1027",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  },
+  {
+    "id": "fbe788fa-3756-41c6-9ef3-8b38a2b47741",
+    "title": "Test Item",
+    "category": "food",
+    "tags": [
+      "pytest"
+    ]
+  },
+  {
+    "id": "13a3aec2-207c-4dca-bbcd-e80d2c2d4194",
+    "title": "Lookup Item",
+    "category": "drink",
+    "tags": []
+  }
+]
