@@ -1,6 +1,7 @@
 from repositories.restaurants_repo import save_all as save_restaurants, load_all as load_restaurants
 from repositories.menus_repo import save_all as save_menus, load_all as load_menus
 from repositories.menu_items_repo import save_all as save_menu_items, load_all as load_menu_items
+from repositories.payments_repo import save_all as save_payments, load_all as load_payments
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, status
 import pytest
@@ -35,13 +36,16 @@ def save_and_restore():
     restaurants = load_restaurants()
     menus = load_menus()
     menu_items = load_menu_items()
+    payments = load_payments()
     save_menu_items([])
     save_menus([])
     save_restaurants([])
+    save_payments([])
     yield
     save_restaurants(restaurants)
     save_menus(menus)
     save_menu_items(menu_items)
+    save_payments(payments)
 
 @pytest.fixture
 def test_restaurant():
