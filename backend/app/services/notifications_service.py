@@ -25,7 +25,7 @@ def notify(delivery: Delivery, notification_type: NotificationType) -> Notificat
     )
     
     all_notifications = _load_notifications()
-    all_notifications.setdefault(delivery.id,[]).append(notification.model_dump)
+    all_notifications.setdefault(delivery.id, []).append(notification.model_dump(mode="json"))
     
     temp = [n for group in all_notifications.values() for n in group]
     save_all(temp)
@@ -50,6 +50,7 @@ def mark_as_read(delivery_id:int, notification_id:int) -> Notification:
             n["read"] = True
             temp = [n for group in all_notifications.values() for n in group]
             save_all(temp)
+            return Notification(**n)
     raise KeyError(f"Notification {notification_id} not found")
 
 def delete_notification(delivery_id: int, notification_id: int) -> Notification:
@@ -65,6 +66,7 @@ def delete_notification(delivery_id: int, notification_id: int) -> Notification:
                 temp = [n for group in all_notifications.values() for n in group]
                 save_all(temp)
                 return Notification(**removed)
+        raise KeyError(f"Notification {notification_id} not found")
     
     
 def _build_message(delivery: Delivery, notification_type: NotificationType) -> str:
