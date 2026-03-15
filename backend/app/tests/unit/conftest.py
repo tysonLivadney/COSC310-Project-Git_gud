@@ -4,6 +4,7 @@ from repositories.menu_items_repo import save_all as save_menu_items, load_all a
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, status
 import pytest
+from pathlib import Path
 from main import app
 
 client = TestClient(app)
@@ -30,6 +31,13 @@ VALID_MENU_ITEM = {
     "in_stock": True
 }
 
+VALID_DRIVER = {
+    "id": 1,
+    "name": "John Smith",
+    "phone": "+123456789",
+    "status": "online"
+}
+
 @pytest.fixture(autouse=True)
 def save_and_restore():
     restaurants = load_restaurants()
@@ -53,21 +61,8 @@ def test_menu(test_restaurant):
 
 @pytest.fixture
 def test_menu_item(test_menu):
-    return client.post("/menu-items", json={**VALID_MENU_ITEM,"menu_id": test_menu["id"]}).json()from fastapi.testclient import TestClient
-import pytest
-from main import app
-from pathlib import Path
+    return client.post("/menu-items", json={**VALID_MENU_ITEM,"menu_id": test_menu["id"]}).json()
 
-
-VALID_DRIVER = {
-    "id": 1,
-    "name": "John Smith",
-    "phone": "+123456789",
-    "status": "online"
-}
-
-
-client = TestClient(app)
 
 DATA_FILE_DELIVERIES = Path("data/deliveries.json")
 
