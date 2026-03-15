@@ -21,7 +21,7 @@ def notify(delivery: Delivery, notification_type: NotificationType) -> Notificat
 def get_notifications(delivery_id: int) -> list[Notification]:
     return notifications.get(delivery_id,[])
 
-def mark_as_read(delivery_id:int, notification_id:int) -> Notification:
+def mark_as_read(delivery_id:int,    notification_id:int) -> Notification:
     delivery_notifications = notifications.get(delivery_id, [])
     for n in delivery_notifications:
         if n.id == notification_id:
