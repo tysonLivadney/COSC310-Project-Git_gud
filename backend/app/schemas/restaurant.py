@@ -7,7 +7,10 @@ class RestaurantCreate(BaseModel):
     address: str = Field(..., min_length=5, max_length=50)
     description: str = Field(..., min_length=10, max_length=300)
     phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$') #ensure correct phone format w/ regex
+    rating: Optional[int] = Field(..., ge=0, le=5) #rating 1-5. When first created restaurants won't have ratings
     tags: List[str] = Field(default=[], max_length=10)
+    estimated_delivery_time: Optional[int] = Field(..., gt=0)
+
 class Restaurant(RestaurantCreate):
     id: str
 
@@ -16,5 +19,7 @@ class RestaurantUpdate(BaseModel):
     address: Optional[str] = Field(None, min_length=5, max_length=50)
     description: Optional[str] = Field(None, min_length=10, max_length=300)
     phone: Optional[str] = Field(None, pattern=r'^\+?[0-9]{7,15}$')
+    rating: Optional[int] = Field(None, ge=0, le=5)
     tags: Optional[List[str]] = Field(default=[], max_length=10)
+    estimated_delivery_time: Optional[int] = Field(None, gt=0)
     

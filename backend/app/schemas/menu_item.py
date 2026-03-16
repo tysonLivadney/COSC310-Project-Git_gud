@@ -6,7 +6,7 @@ class MenuItemCreate(BaseModel):
     description: str = Field(..., max_length=300)
     price: float = Field(..., ge = 0, lt = 10000)
     in_stock: bool
-    menu_id: str 
+    menu_id: str
 
 class MenuItem(MenuItemCreate):
     id: str
