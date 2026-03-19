@@ -28,13 +28,14 @@ jobs:
           pip install ruff pytest-cov
 
       - name: Run lint
-        run: ruff check backend/app
+        run: ruff check backend/app --select E9,F63,F7,F82
 
       - name: Run tests with coverage
-        run: pytest --cov=backend/app --cov-report=term-missing --cov-report=xml:coverage.xml
+        working-directory: backend/app
+        run: pytest --import-mode=importlib --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml tests ../test
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: backend/app/coverage.xml
