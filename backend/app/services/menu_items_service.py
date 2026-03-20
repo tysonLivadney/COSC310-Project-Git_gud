@@ -15,7 +15,6 @@ def create_menu_item(payload: MenuItemCreate) -> MenuItem:
     new_id = str(uuid.uuid4())
     if any(m.get("id") == new_id for m in menu_items):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    #ensure menu item is attached to existing menu
     if not any(r["id"] == payload.menu_id for r in load_menus()):
         raise HTTPException(status_code=404, detail=f"Menu '{payload.menu_id}' not found")
     new_menu_item = MenuItem(
@@ -47,6 +46,18 @@ def get_menu_items_by_restaurant_id(restaurant_id: str) -> List[MenuItem]:
     menu_ids = [m["id"] for m in menus if m.get("restaurant_id") == restaurant_id]
     return [MenuItem(**m) for m in menu_items if m.get("menu_id") in menu_ids]
 
+def search_menu_items(menu_id:str = None, name:str = None, max_price: int = None, only_in_stock: bool = None, limit=None, offset=None) -> List[MenuItem]:
+    if menu_id:
+        menu_items = [r.model_dump() for r in get_menu_items_by_menu_id(menu_id)]
+    else:
+        menu_items = load_all()
+    if only_in_stock:
+        menu_items = [r for r in menu_items if r["in_stock"] == True]
+    if name:
+        menu_items = [r for r in menu_items if name.lower() in r["name"].lower()]
+    if max_price:
+        menu_items = [r for r in menu_items if r["price"] <= max_price]
+    return [MenuItem(**r) for r in menu_items[offset: offset+limit]]
 
 def update_menu_item(menu_item_id: str, payload: MenuItemUpdate) -> MenuItem:
     menu_items = load_all()
@@ -72,11 +83,9 @@ def delete_menu_item(menu_item_id: str) -> None:
         raise HTTPException(status_code=404, detail=f"Menu Item '{menu_item_id}' not found")
     save_all(new_menu_items)
 
-#cascade delete items when menu is deleted
 def delete_menu_items_by_menu_id(menu_id: str) -> None:
     menu_items = load_all()
     new_menu_items = [m for m in menu_items if m.get("menu_id") != menu_id]
-    #no http exception since items may not exist
     save_all(new_menu_items)
 
 
