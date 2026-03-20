@@ -18,7 +18,7 @@ VALID_MENU = {
     "description": "Test menu description that is long enough.",
 }
 
-#POST tests
+
 def test_post_valid_restaurant():
     response = client.post("/restaurants", json=VALID_RESTAURANT)
     assert response.status_code == 201
@@ -52,7 +52,6 @@ def test_too_many_tags():
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
-#GET tests
 def test_get_restaurants(): 
     client.post("/restaurants", json=VALID_RESTAURANT)
     client.post("/restaurants", json=VALID_RESTAURANT)
@@ -93,7 +92,7 @@ def test_restaurant_invalid_phone():
     response = client.put(f"/restaurants/{restaurant['id']}", json = {**VALID_RESTAURANT, "phone":"f1234567890"})
     assert response.status_code == 422
 
-#DELETE tests
+
 def test_delete_restaurant():
     restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
     response = client.delete(f"/restaurants/{restaurant['id']}")
@@ -103,14 +102,14 @@ def test_delete_restaurant():
 def test_delete_restaurant_not_found():
     response = client.delete("/restaurants/00000")
     assert response.status_code == 404
-#should delete menus under it
+
 def test_delete_cascade():
     restaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
     menu = client.post("/menus", json = {**VALID_MENU, "restaurant_id":restaurant["id"]}).json()
     response = client.delete(f"/restaurants/{restaurant['id']}")
     assert client.get(f"/menus/{menu['id']}").status_code == 404
 
-#Additional search feature tests
+
 def test_search_restaurants_name_only():
     client.post("/restaurants", json=VALID_RESTAURANT).json()
     client.post("/restaurants", json=VALID_RESTAURANT).json()
@@ -171,7 +170,7 @@ def test_pagination():
     for i in range(1, 11):
         client.post("/restaurants", json={**VALID_RESTAURANT, "name": f"restaurant{i}"})
     
-    response = client.get("/restaurants/search?limit=5&offset=5") #return 5-10
+    response = client.get("/restaurants/search?limit=5&offset=5") 
     assert response.status_code == 200
     assert len(response.json()) == 5
     assert response.json()[0]["name"] == "restaurant6"
@@ -185,4 +184,4 @@ def test_filtered_pagination():
 
     response = client.get("/restaurants/search?name=restaurant&limit=2&offset=9")
     assert response.status_code == 200
-    assert len(response.json()) == 2 #inclusive of offset
+    assert len(response.json()) == 2 

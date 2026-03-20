@@ -45,7 +45,7 @@ def update_menu(menu_id: str, payload: MenuUpdate) -> Menu:
                 id = menu_id,
                 name=payload.name.strip(),
                 description=payload.description.strip(),
-                restaurant_id = m.get("restaurant_id")
+                restaurant_id=str(m["restaurant_id"])
             )
             menus[idx] = updated.model_dump()
             save_all(menus)
