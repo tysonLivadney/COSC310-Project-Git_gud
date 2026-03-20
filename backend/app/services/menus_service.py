@@ -66,6 +66,7 @@ def delete_menu_items_by_restaurant_id(restaurant_id: str) -> None:
     for m in menu_ids:
         delete_menu_items_by_menu_id(m)
     new_menus = [m for m in menus if m.get("restaurant_id") != restaurant_id]
+
     save_all(new_menus)
 
 

@@ -29,7 +29,7 @@ def put_menu(menu_id: str, payload: MenuUpdate):
 
 @router.delete("/{menu_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_menu(menu_id: str):
-    delete_menu_items_by_menu_id(menu_id) #delete menu items first
+    delete_menu_items_by_menu_id(menu_id)
     delete_menu(menu_id)
     return None
 

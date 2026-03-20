@@ -5,7 +5,7 @@ client = TestClient(app)
 
 VALID_RESTAURANT = {
     "name": "Test Restaurant",
-    "address": " 123 Address ",
+    "address": " 123 Address ", 
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
@@ -18,7 +18,7 @@ VALID_MENU = {
     "description": "Test menu description that is long enough.",
 }
 
-#POST tests
+
 def test_post_valid_restaurant():
     response = client.post("/restaurants", json=VALID_RESTAURANT)
     assert response.status_code == 201
@@ -38,7 +38,7 @@ def test_name_too_long():
     assert response.status_code == 422
 
 def test_post_invalid_phone():
-    invalid_restaurant = {**VALID_RESTAURANT, "phone": "a123456789"}
+    invalid_restaurant = {**VALID_RESTAURANT, "phone": "a123456789"} 
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
@@ -52,7 +52,6 @@ def test_too_many_tags():
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
-#GET tests
 def test_get_restaurants(): 
     client.post("/restaurants", json=VALID_RESTAURANT)
     client.post("/restaurants", json=VALID_RESTAURANT)
@@ -63,7 +62,7 @@ def test_get_restaurants():
 
 def test_get_restaurants_empty_file():
     response = client.get("/restaurants")
-    assert len(response.json()) == 0
+    assert len(response.json()) == 0 
 
 def test_get_restaurant_by_id():
     testaurant = client.post("/restaurants", json=VALID_RESTAURANT).json()
