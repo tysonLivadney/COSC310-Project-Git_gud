@@ -13,8 +13,8 @@ class DeliveryStatus(str,Enum):
     CANCELLED = "cancelled"
 
 class Delivery(BaseModel):
-        id: int
-        order_id: int
+        id: str
+        order_id: str
         pickup_address: str
         dropoff_address: str
         driver: Optional[Driver] = None
