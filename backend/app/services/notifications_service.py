@@ -1,12 +1,11 @@
 from schemas.notifications import Notification, NotificationType
 from schemas.delivery import Delivery
 from repositories.notifications_repo import save_all, load_all
-
-_next_id = 1
+from uuid import uuid4
 
 def _load_notifications() -> dict[int, list[dict]]:
     notis = load_all()
-    result: dict[int, list[dict]] = {}
+    result: dict[str, list[dict]] = {}
     for n in notis:
         delivery_id = n["delivery_id"]
         result.setdefault(delivery_id, []).append(n)
@@ -15,13 +14,12 @@ def _load_notifications() -> dict[int, list[dict]]:
 
 
 def notify(delivery: Delivery, notification_type: NotificationType) -> Notification:
-    global _next_id
     message = _build_message(delivery,notification_type)
     notification = Notification(
-        id = _next_id,
+        id = str(uuid4()),
         delivery_id=delivery.id,
         type=notification_type,
-        message=message,
+        message=message
     )
     
     all_notifications = _load_notifications()
@@ -30,15 +28,14 @@ def notify(delivery: Delivery, notification_type: NotificationType) -> Notificat
     temp = [n for group in all_notifications.values() for n in group]
     save_all(temp)
     
-    _next_id += 1
     return notification
  
  
-def get_notifications(delivery_id: int) -> list[Notification]:
+def get_notifications(delivery_id: str) -> list[Notification]:
     all_notifications = _load_notifications()
     return [Notification(**n) for n in all_notifications.get(delivery_id,[])]
 
-def mark_as_read(delivery_id:int, notification_id:int) -> Notification:
+def mark_as_read(delivery_id:str, notification_id:str) -> Notification:
     all_notifications = _load_notifications()
     notifications = all_notifications.get(delivery_id)
 
@@ -53,7 +50,7 @@ def mark_as_read(delivery_id:int, notification_id:int) -> Notification:
             return Notification(**n)
     raise KeyError(f"Notification {notification_id} not found")
 
-def delete_notification(delivery_id: int, notification_id: int) -> Notification:
+def delete_notification(delivery_id: str, notification_id: str) -> Notification:
         all_notifications = _load_notifications()
         notifications = all_notifications.get(delivery_id)
         if not notifications:

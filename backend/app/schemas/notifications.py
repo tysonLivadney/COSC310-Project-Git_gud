@@ -11,8 +11,8 @@ class NotificationType(str, Enum):
     DELIVERY_CANCELLED = "delivery_cancelled"
     
 class Notification(BaseModel):
-    id: int
-    delivery_id: int
+    id: str
+    delivery_id: str
     type: NotificationType
     message: str
     read: bool = False
