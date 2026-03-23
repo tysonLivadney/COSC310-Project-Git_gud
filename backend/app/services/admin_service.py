@@ -1,7 +1,10 @@
 from typing import List, Optional
+from datetime import datetime
 from schemas.order import Order, OrderStatus
 from schemas.admin import AdminReport, RestaurantRevenue
+from schemas.delivery import DeliveryStatus
 from repositories.orders_repo import load_all
+from repositories.delivery_repo import load_all as load_all_deliveries
 
 
 def list_all_orders(
@@ -68,7 +71,31 @@ def generate_report(
         for rid, data in sorted(restaurant_map.items(), key=lambda x: x[1]["total_revenue"], reverse=True)
     ]
 
+    avg_delivery_time = _calculate_avg_delivery_time()
+
     return AdminReport(
         total_revenue=round(total_revenue, 2),
         revenue_per_restaurant=revenue_per_restaurant,
+        average_delivery_time=avg_delivery_time,
     )
+
+
+def _calculate_avg_delivery_time() -> Optional[float]:
+    deliveries = load_all_deliveries()
+
+    completed = [
+        d for d in deliveries
+        if d.get("status") == DeliveryStatus.DELIVERED.value
+    ]
+
+    if not completed:
+        return None
+
+    total_minutes = 0.0
+    for d in completed:
+        created = datetime.fromisoformat(d["created_at"])
+        updated = datetime.fromisoformat(d["updated_at"])
+        diff = (updated - created).total_seconds() / 60
+        total_minutes += diff
+
+    return round(total_minutes / len(completed), 2)
