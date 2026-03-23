@@ -1,92 +1,94 @@
-from fastapi.testclient import TestClient
-from unittest.mock import patch
-from main import app
+import pytest
+from uuid import uuid4
+from schemas.delivery import Delivery, DeliveryStatus
+from schemas.notifications import Notification, NotificationType
+from services import notifications_service
 
-client = TestClient(app)
+def test_notify_returns_notification(sample_delivery):
+    result = notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+    assert result.delivery_id == sample_delivery.id
+    assert result.type == NotificationType.DELIVERY_CREATED
+    assert result.read == False
 
-VALID_DELIVERY = {
-    "id": 1,
-    "order_id": 101,
-    "pickup_address": "Pickup",
-    "dropoff_address": "Dropoff",
-    "status": "pending",
-    "created_at": "2024-01-01T00:00:00",
-    "updated_at": "2024-01-01T00:00:00"
-}
+def test_notify_generates_unique_ids(sample_delivery):
+    n1 = notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+    n2 = notifications_service.notify(sample_delivery, NotificationType.DELIVERY_ASSIGNED)
+    assert n1.id != n2.id
 
-VALID_NOTIFICATION = {
-    "id": 1,
-    "delivery_id": 1,
-    "type": "delivery_notification",
-    "message": "Delivery 1 has been created for order 101",
-    "read": False
-}
+def test_notify_builds_correct_message(sample_delivery):
+    result = notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+    assert str(sample_delivery.id) in result.message
+    assert str(sample_delivery.order_id) in result.message
 
-def test_post_valid_notification():
-    response = client.post("/notifications/", json=VALID_DELIVERY, params={"notification_type": "delivery_created"})
-    print(response.json())
-    assert response.status_code == 200
-    data = response.json()
-    assert data["delivery_id"] == VALID_DELIVERY["id"]
-    assert data["type"] == "delivery_created"
-    assert "id" in data
-    
-def test_post_invalid_notification_type():
-    response = client.post("/notifications/", json = VALID_DELIVERY,params={"notification_type" : "INVALID_TYPE"})
-    assert response.status_code == 422
-    
-def test_post_missing_delivery_body():
-    response = client.post("/notifications/", json = {},params={"notification_type" : "DELIVERY_CREATED"})
-    assert response.status_code == 422
-    
-    
+def test_notify_all_types(sample_delivery):
+    for n in NotificationType:
+        result = notifications_service.notify(sample_delivery, n)
+        assert result.type == n
 
-def test_get_notifications(test_notification):
-    response = client.get(f"/notifications/{test_notification['delivery_id']}")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
-    
+
+
+
 def test_get_notifications_empty():
-    response = client.get("/notifications/9999999")
-    assert response.status_code == 200
-    assert response.json() == []
-    
-def test_get_notifications_invalid_id():
-    response = client.get("/notifications/hello")
-    assert response.status_code == 422
-    
-    
-    
-def test_mark_as_read(test_notification):
-    response = client.patch(f"/notifications/{test_notification['delivery_id']}/{test_notification['id']}/read")
-    assert response.status_code == 200
-    assert response.json()["read"] == True
-    
-def test_mark_as_read_invalid_notification_id(test_notification):
-    response = client.patch(f"/notifications/{test_notification['delivery_id']}/9999/read")
-    assert response.status_code == 404
-    
-def test_mark_as_read_invalid_delivery_id(test_notification):
-    response = client.patch(f"/notifications/9999999/1/read")
-    assert response.status_code == 404
-    
+    assert notifications_service.get_notifications(str(uuid4())) == []
+
+def test_get_notifications_returns_list(sample_delivery):
+    notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+    notifications_service.notify(sample_delivery, NotificationType.DELIVERY_ASSIGNED)
+    result = notifications_service.get_notifications(sample_delivery.id)
+    assert len(result) == 2
+    assert all(isinstance(n, Notification) for n in result)
+
+def test_get_notifications_correct_delivery(sample_delivery):
+    other_delivery = Delivery(
+        id=str(uuid4()),
+        order_id="202",
+        pickup_address="pickup2",
+        dropoff_address="dropoff2",
+        status=DeliveryStatus.PENDING
+    )
+    notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+    notifications_service.notify(other_delivery, NotificationType.DELIVERY_CREATED)
+    result = notifications_service.get_notifications(sample_delivery.id)
+    assert all(n.delivery_id == sample_delivery.id for n in result)
+    assert all(n.delivery_id != other_delivery.id for n in result)
 
 
-def test_delete_notification(test_notification):
-    response = client.delete(f"/notifications/{test_notification['delivery_id']}/{test_notification['id']}")
-    assert response.status_code == 200
-    assert "deleted" in response.json()["message"]
-    
-def test_delete_notification_invalid_notification_id(test_notification):
-    response = client.delete(f"/notifications/{test_notification['delivery_id']}/999999")
-    assert response.status_code == 404
-    
-def test_delete_notification_invalid_delivery_id(test_notification):
-    response = client.delete(f"/notifications/9999999/1")
-    assert response.status_code == 404
-    
-def test_delete_notification_removes_proper(test_notification):
-    client.delete(f"/notifications/{test_notification['delivery_id']}/{test_notification['id']}")
-    remaining = client.get(f"/notifications/{test_notification["delivery_id"]}").json()
-    assert not any(n["id"] == test_notification["id"] for n in remaining)
-    
+
+
+
+def test_mark_as_read(sample_delivery, sample_notification):
+    result = notifications_service.mark_as_read(sample_delivery.id, sample_notification.id)
+    assert result.read == True
+
+def test_mark_as_read_invalid_notification(sample_delivery):
+    with pytest.raises(KeyError):
+        notifications_service.mark_as_read(sample_delivery.id, str(uuid4()))
+
+def test_mark_as_read_invalid_delivery():
+    with pytest.raises(KeyError):
+        notifications_service.mark_as_read(str(uuid4()), str(uuid4()))
+
+def test_mark_as_read_persists(sample_delivery, sample_notification):
+    notifications_service.mark_as_read(sample_delivery.id, sample_notification.id)
+    notifications = notifications_service.get_notifications(sample_delivery.id)
+    assert any(n.id == sample_notification.id and n.read for n in notifications)
+
+
+
+def test_delete_notification(sample_delivery, sample_notification):
+    result = notifications_service.delete_notification(sample_delivery.id, sample_notification.id)
+    assert isinstance(result, Notification)
+    assert result.id == sample_notification.id
+
+def test_delete_notification_removes_it(sample_delivery, sample_notification):
+    notifications_service.delete_notification(sample_delivery.id, sample_notification.id)
+    remaining = notifications_service.get_notifications(sample_delivery.id)
+    assert not any(n.id == sample_notification.id for n in remaining)
+
+def test_delete_notification_invalid_notification(sample_delivery):
+    with pytest.raises(KeyError):
+        notifications_service.delete_notification(sample_delivery.id, str(uuid4()))
+
+def test_delete_notification_invalid_delivery():
+    with pytest.raises(KeyError):
+        notifications_service.delete_notification(str(uuid4()), str(uuid4()))
