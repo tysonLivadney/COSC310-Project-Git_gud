@@ -3,6 +3,7 @@ from repositories.orders_repo import load_all as load_orders, save_all as save_o
 from repositories.users_repo import load_all as load_users, save_all as save_users
 from repositories.sessions_repo import load_all as load_sessions, save_all as save_sessions
 from repositories.delivery_repo import load_all as load_deliveries, save_all as save_deliveries
+from repositories.reviews_repo import load_all as load_reviews, save_all as save_reviews
 import pytest
 from main import app
 
@@ -42,15 +43,18 @@ def save_and_restore():
     users = load_users()
     sessions = load_sessions()
     deliveries = load_deliveries()
+    reviews = load_reviews()
     save_orders([])
     save_users([])
     save_sessions([])
     save_deliveries([])
+    save_reviews([])
     yield
     save_orders(orders)
     save_users(users)
     save_sessions(sessions)
     save_deliveries(deliveries)
+    save_reviews(reviews)
 
 
 @pytest.fixture
@@ -287,3 +291,56 @@ def test_reports_avg_ignores_pending_deliveries(manager_token):
     response = client.get("/admin/reports", headers=_auth_header(manager_token))
     assert response.status_code == 200
     assert response.json()["average_delivery_time"] is None
+
+
+#GET /admin/reports highest rated restaurants tests
+def test_reports_no_reviews_returns_empty_highest_rated(manager_token):
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert response.json()["highest_rated_restaurants"] == []
+
+
+def test_reports_highest_rated_single_restaurant(manager_token):
+    save_reviews([
+        {"id": "r1", "order_id": "o1", "restaurant_id": 1, "user_id": "u1",
+         "rating": 5, "comment": None, "created_at": "2026-03-10T10:00:00"},
+        {"id": "r2", "order_id": "o2", "restaurant_id": 1, "user_id": "u2",
+         "rating": 4, "comment": None, "created_at": "2026-03-10T11:00:00"},
+    ])
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert response.json()["highest_rated_restaurants"] == [1]
+
+
+def test_reports_highest_rated_ordering(manager_token):
+    save_reviews([
+        {"id": "r1", "order_id": "o1", "restaurant_id": 1, "user_id": "u1",
+         "rating": 3, "comment": None, "created_at": "2026-03-10T10:00:00"},
+        {"id": "r2", "order_id": "o2", "restaurant_id": 2, "user_id": "u2",
+         "rating": 5, "comment": None, "created_at": "2026-03-10T11:00:00"},
+        {"id": "r3", "order_id": "o3", "restaurant_id": 3, "user_id": "u3",
+         "rating": 4, "comment": None, "created_at": "2026-03-10T12:00:00"},
+    ])
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    highest = response.json()["highest_rated_restaurants"]
+    # restaurant 2 (5.0) > restaurant 3 (4.0) > restaurant 1 (3.0)
+    assert highest == [2, 3, 1]
+
+
+def test_reports_highest_rated_caps_at_five(manager_token):
+    reviews = []
+    for i in range(1, 8):
+        reviews.append({
+            "id": f"r{i}", "order_id": f"o{i}", "restaurant_id": i,
+            "user_id": f"u{i}", "rating": i if i <= 5 else 3,
+            "comment": None, "created_at": "2026-03-10T10:00:00",
+        })
+
+    save_reviews(reviews)
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert len(response.json()["highest_rated_restaurants"]) == 5
