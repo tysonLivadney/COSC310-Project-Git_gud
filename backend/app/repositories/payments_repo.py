@@ -2,7 +2,6 @@ import json
 import os
 from pathlib import Path
 from typing import List, Dict, Any
-#from ..config.paths import PAYMENTS_JSON_PATH as DATA_PATH
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "payments.json"
 

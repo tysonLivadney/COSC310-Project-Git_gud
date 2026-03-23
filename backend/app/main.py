@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from routers.auth import router as auth_router
-from routers.items import router as items_router
 from routers.orders import router as orders_router
 from routers.order_total import router as order_total_router
 from routers.restaurants import router as restaurants_router
@@ -21,7 +20,6 @@ app.include_router(restaurants_router)
 app.include_router(menus_router)
 app.include_router(menu_items_router)
 app.include_router(auth_router)
-app.include_router(items_router)
 app.include_router(payment_router)
 app.include_router(reviews_router)
 app.include_router(delivery_router)
