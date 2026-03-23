@@ -9,7 +9,7 @@ class DriverStatus(str, Enum):
     BUSY = "busy"
 
 class Driver(BaseModel):
-    id: int
+    id: str
     name: str
     phone: str
     status: DriverStatus = DriverStatus.OFFLINE
