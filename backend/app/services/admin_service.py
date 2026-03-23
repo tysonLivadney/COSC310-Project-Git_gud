@@ -5,6 +5,7 @@ from schemas.admin import AdminReport, RestaurantRevenue
 from schemas.delivery import DeliveryStatus
 from repositories.orders_repo import load_all
 from repositories.delivery_repo import load_all as load_all_deliveries
+from repositories.reviews_repo import load_all as load_all_reviews
 
 
 def list_all_orders(
@@ -72,11 +73,13 @@ def generate_report(
     ]
 
     avg_delivery_time = _calculate_avg_delivery_time()
+    top_restaurants = _get_highest_rated_restaurants()
 
     return AdminReport(
         total_revenue=round(total_revenue, 2),
         revenue_per_restaurant=revenue_per_restaurant,
         average_delivery_time=avg_delivery_time,
+        highest_rated_restaurants=top_restaurants,
     )
 
 
@@ -99,3 +102,26 @@ def _calculate_avg_delivery_time() -> Optional[float]:
         total_minutes += diff
 
     return round(total_minutes / len(completed), 2)
+
+
+def _get_highest_rated_restaurants(limit: int = 5) -> List[int]:
+    reviews = load_all_reviews()
+
+    if not reviews:
+        return []
+
+    rating_map = {}
+    for r in reviews:
+        rid = r.get("restaurant_id")
+        if rid not in rating_map:
+            rating_map[rid] = []
+        rating_map[rid].append(r.get("rating", 0))
+
+    averages = []
+    for rid, ratings in rating_map.items():
+        avg = sum(ratings) / len(ratings)
+        averages.append((rid, avg))
+
+    averages.sort(key=lambda x: x[1], reverse=True)
+
+    return [rid for rid, avg in averages[:limit]]
