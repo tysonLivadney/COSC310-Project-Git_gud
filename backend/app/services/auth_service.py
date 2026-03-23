@@ -17,6 +17,7 @@ from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, Role, Use
 
 
 SESSION_DURATION_HOURS = 24
+PASSWORD_HASH_ITERATIONS = 100000
 
 
 def _utc_now() -> datetime:
@@ -32,8 +33,26 @@ def _normalize_email(email: str) -> str:
 
 def _hash_password(password: str, salt_hex: str) -> str:
     salt = bytes.fromhex(salt_hex)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PASSWORD_HASH_ITERATIONS)
     return digest.hex()
+
+
+def _find_user_by_email(users: list[dict], normalized_email: str) -> dict | None:
+    for user in users:
+        if _normalize_email(user["email"]) == normalized_email:
+            return user
+    return None
+
+
+def _create_session(user_id: str) -> dict:
+    now = _utc_now()
+    expires_at = now + timedelta(hours=SESSION_DURATION_HOURS)
+    return {
+        "token": secrets.token_urlsafe(32),
+        "user_id": user_id,
+        "created_at": _to_utc_string(now),
+        "expires_at": _to_utc_string(expires_at),
+    }
 
 
 def _build_user_response(user: dict) -> UserResponse:
@@ -72,34 +91,25 @@ def login_user(payload: LoginRequest) -> LoginResponse:
     users = load_all_users()
     normalized_email = _normalize_email(payload.email)
 
-    for user in users:
-        if _normalize_email(user["email"]) != normalized_email:
-            continue
+    user = _find_user_by_email(users, normalized_email)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
-        expected_hash = _hash_password(payload.password, user["password_salt"])
-        if not hmac.compare_digest(expected_hash, user["password_hash"]):
-            break
+    expected_hash = _hash_password(payload.password, user["password_salt"])
+    if not hmac.compare_digest(expected_hash, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
-        sessions = load_all_sessions()
-        now = _utc_now()
-        expires_at = now + timedelta(hours=SESSION_DURATION_HOURS)
-        session = {
-            "token": secrets.token_urlsafe(32),
-            "user_id": user["id"],
-            "created_at": _to_utc_string(now),
-            "expires_at": _to_utc_string(expires_at),
-        }
-        sessions.append(session)
-        save_all_sessions(sessions)
+    sessions = load_all_sessions()
+    session = _create_session(user["id"])
+    sessions.append(session)
+    save_all_sessions(sessions)
 
-        return LoginResponse(
-            token=session["token"],
-            token_type="bearer",
-            expires_at=session["expires_at"],
-            user=_build_user_response(user),
-        )
-
-    raise HTTPException(status_code=401, detail="Invalid email or password")
+    return LoginResponse(
+        token=session["token"],
+        token_type="bearer",
+        expires_at=session["expires_at"],
+        user=_build_user_response(user),
+    )
 
 def _extract_bearer_token(authorization: str | None) -> str:
     if not authorization:

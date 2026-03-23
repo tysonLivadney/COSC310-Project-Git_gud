@@ -43,9 +43,9 @@ def update_menu(menu_id: str, payload: MenuUpdate) -> Menu:
         if m.get("id") == menu_id:
             updated = Menu(
                 id = menu_id,
-                name=payload.name.strip(),
-                description=payload.description.strip(),
-                restaurant_id = m.get("restaurant_id")
+                name=payload.name.strip() if payload.name is not None else str(m.get("name")),
+                description=payload.description.strip() if payload.description is not None else str(m.get("description")),
+                restaurant_id=str(m.get("restaurant_id")),
             )
             menus[idx] = updated.model_dump()
             save_all(menus)
