@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from repositories.orders_repo import load_all as load_orders, save_all as save_orders
 from repositories.users_repo import load_all as load_users, save_all as save_users
 from repositories.sessions_repo import load_all as load_sessions, save_all as save_sessions
+from repositories.delivery_repo import load_all as load_deliveries, save_all as save_deliveries
 import pytest
 from main import app
 
@@ -40,13 +41,16 @@ def save_and_restore():
     orders = load_orders()
     users = load_users()
     sessions = load_sessions()
+    deliveries = load_deliveries()
     save_orders([])
     save_users([])
     save_sessions([])
+    save_deliveries([])
     yield
     save_orders(orders)
     save_users(users)
     save_sessions(sessions)
+    save_deliveries(deliveries)
 
 
 @pytest.fixture
@@ -204,3 +208,82 @@ def test_reports_unauthorized():
 def test_reports_as_regular_user(user_token):
     response = client.get("/admin/reports", headers=_auth_header(user_token))
     assert response.status_code == 403
+
+
+#GET /admin/reports average delivery time tests
+def test_reports_no_deliveries_returns_null_avg(manager_token):
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert response.json()["average_delivery_time"] is None
+
+
+def test_reports_with_completed_delivery(manager_token):
+    save_deliveries([
+        {
+            "id": 1,
+            "order_id": 1,
+            "pickup_address": "123 Main St",
+            "dropoff_address": "456 Elm St",
+            "driver": None,
+            "status": "delivered",
+            "estimated_arrival": None,
+            "created_at": "2026-03-10T10:00:00",
+            "updated_at": "2026-03-10T10:30:00",
+        }
+    ])
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert response.json()["average_delivery_time"] == 30.0
+
+
+def test_reports_avg_delivery_multiple(manager_token):
+    save_deliveries([
+        {
+            "id": 1,
+            "order_id": 1,
+            "pickup_address": "123 Main St",
+            "dropoff_address": "456 Elm St",
+            "driver": None,
+            "status": "delivered",
+            "estimated_arrival": None,
+            "created_at": "2026-03-10T10:00:00",
+            "updated_at": "2026-03-10T10:30:00",
+        },
+        {
+            "id": 2,
+            "order_id": 2,
+            "pickup_address": "789 Oak St",
+            "dropoff_address": "101 Pine St",
+            "driver": None,
+            "status": "delivered",
+            "estimated_arrival": None,
+            "created_at": "2026-03-10T12:00:00",
+            "updated_at": "2026-03-10T13:00:00",
+        },
+    ])
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    # first delivery = 30 min, second = 60 min, avg = 45
+    assert response.json()["average_delivery_time"] == 45.0
+
+
+def test_reports_avg_ignores_pending_deliveries(manager_token):
+    save_deliveries([
+        {
+            "id": 1,
+            "order_id": 1,
+            "pickup_address": "123 Main St",
+            "dropoff_address": "456 Elm St",
+            "driver": None,
+            "status": "pending",
+            "estimated_arrival": None,
+            "created_at": "2026-03-10T10:00:00",
+            "updated_at": "2026-03-10T10:00:00",
+        }
+    ])
+
+    response = client.get("/admin/reports", headers=_auth_header(manager_token))
+    assert response.status_code == 200
+    assert response.json()["average_delivery_time"] is None
