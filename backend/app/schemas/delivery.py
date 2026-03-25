@@ -14,9 +14,9 @@ class DeliveryStatus(str,Enum):
 
 class Delivery(BaseModel):
         id: str
-        order_id: int
-        pickup_address: str
-        dropoff_address: str
+        order_id: str
+        pickup_address: Optional[str] = None
+        dropoff_address: Optional[str] = None
         driver: Optional[Driver] = None
         status: DeliveryStatus = DeliveryStatus.PENDING
         estimated_arrival: Optional[datetime] = None

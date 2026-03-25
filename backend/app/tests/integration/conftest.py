@@ -6,8 +6,20 @@ import pytest
 from pathlib import Path
 
 from main import app
+from services.auth_service import get_current_user
+from schemas.auth import UserResponse
+
+
+def _mock_driver():
+    return UserResponse(id="1", name="John Smith", email="john@test.com", role="user", created_at="2024-01-01T00:00:00Z")
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def mock_driver_auth():
+    app.dependency_overrides[get_current_user] = _mock_driver
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 VALID_DRIVER = {
     "id": "1",

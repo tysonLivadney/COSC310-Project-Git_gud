@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from repositories.orders_repo import load_all, save_all
+from repositories.users_repo import load_all as load_all_users
 
 
 def list_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None) -> List[Order]:
@@ -20,6 +21,12 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+    delivery_address = payload.delivery_address
+    if not delivery_address:
+        users = load_all_users()
+        user = next((u for u in users if u["id"] == payload.customer_id), None)
+        if user:
+            delivery_address = user.get("address")
     new_order = Order(
         id=new_id,
         restaurant_id=payload.restaurant_id,
@@ -27,6 +34,7 @@ def create_order(payload: OrderCreate) -> Order:
         items=payload.items,
         status=OrderStatus.DRAFT,
         created_at=datetime.now(timezone.utc).isoformat(),
+        delivery_address=delivery_address,
     )
     orders.append(new_order.model_dump())
     save_all(orders)
@@ -56,6 +64,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
                 items=payload.items,
                 status=OrderStatus.DRAFT,
                 created_at=o["created_at"],
+                delivery_address=o.get("delivery_address"),
             )
             orders[idx] = updated.model_dump()
             save_all(orders)
