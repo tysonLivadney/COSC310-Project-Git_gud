@@ -14,8 +14,8 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 
 
 @router.get("", response_model=List[Order])
-def get_orders(customer_id: Optional[str] = None, order_status: Optional[OrderStatus] = None):
-    return list_orders(customer_id=customer_id, status=order_status)
+def get_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None):
+    return list_orders(customer_id=customer_id, status=status)
 
 
 @router.post("", response_model=Order, status_code=201)
