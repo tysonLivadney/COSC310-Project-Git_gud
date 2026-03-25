@@ -62,6 +62,7 @@ def _build_user_response(user: dict) -> UserResponse:
         email=user["email"],
         role=user["role"],
         created_at=user["created_at"],
+        address=user.get("address"),
     )
 
 
@@ -81,6 +82,7 @@ def register_user(payload: RegisterRequest) -> UserResponse:
         "password_salt": salt_hex,
         "password_hash": _hash_password(payload.password, salt_hex),
         "created_at": _to_utc_string(_utc_now()),
+        "address": payload.address,
     }
     users.append(user)
     save_all_users(users)
