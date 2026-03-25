@@ -3,12 +3,30 @@ from main import app
 
 client = TestClient(app)
 
-VALID_DRIVER = {
-    "id": "1",
+DRIVER_USER = {
     "name": "John Smith",
-    "phone": "+123456789",
-    "status": "online"
+    "email": "driver@test.com",
+    "password": "password123",
+    "role": "driver",
 }
+
+VALID_PROFILE = {
+    "phone": "+123456789",
+    "vehicle_type": "Sedan",
+    "license_plate": "ABC123",
+}
+
+
+def _setup_driver():
+    client.post("/auth/register", json=DRIVER_USER)
+    login = client.post("/auth/login", json={
+        "email": DRIVER_USER["email"],
+        "password": DRIVER_USER["password"],
+    }).json()
+    token = login["token"]
+    driver_id = login["user"]["id"]
+    client.post("/drivers/profile", json=VALID_PROFILE, headers={"Authorization": f"Bearer {token}"})
+    return driver_id
 
 def test_create_delivery():
     response = client.post("/deliveries/", params={
@@ -63,13 +81,14 @@ def test_delete_delivery_not_found():
 
 
 def test_assign_driver(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", json=VALID_DRIVER)
+    driver_id = _setup_driver()
+    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", params={"driver_id": driver_id})
     assert response.status_code == 200
     assert response.json()["status"] == "assigned"
-    assert response.json()["driver"]["id"] == VALID_DRIVER["id"]
+    assert response.json()["driver"]["name"] == "John Smith"
 
 def test_assign_driver_not_found():
-    response = client.patch("/deliveries/99999/assign", json=VALID_DRIVER)
+    response = client.patch("/deliveries/99999/assign", params={"driver_id": "fake-id"})
     assert response.status_code == 404
 
 
