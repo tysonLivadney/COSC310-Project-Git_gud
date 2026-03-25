@@ -2,6 +2,7 @@ from schemas import Delivery, DeliveryStatus, Driver
 from datetime import datetime
 from typing import Optional
 from repositories.delivery_repo import load_all,save_all
+from repositories.drivers_repo import load_all as load_all_drivers
 from uuid import uuid4
 from fastapi import HTTPException
 
@@ -53,7 +54,22 @@ def delete_delivery(delivery_id: str) -> None:
             return
     raise KeyError(f"Delivery {delivery_id} not found")
 
-def assign_driver(delivery_id: str, driver: Driver) -> Delivery:
+def assign_driver(delivery_id: str, driver_id: str) -> Delivery:
+    drivers = load_all_drivers()
+    driver_data = None
+    for d in drivers:
+        if d.get("user_id") == driver_id:
+            driver_data = d
+            break
+    if not driver_data:
+        raise KeyError(f"Driver {driver_id} not found")
+
+    driver = Driver(
+        id=driver_data["user_id"],
+        name=driver_data["name"],
+        phone=driver_data["phone"],
+    )
+
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.ASSIGNED)
     delivery.driver = driver

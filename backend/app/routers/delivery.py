@@ -27,9 +27,9 @@ def delete_delivery(delivery_id: str):
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.patch("/{delivery_id}/assign", response_model=Delivery)
-def assign_driver(delivery_id: str, driver:Driver):
+def assign_driver(delivery_id: str, driver_id: str):
     try:
-        return delivery_service.assign_driver(delivery_id,driver)
+        return delivery_service.assign_driver(delivery_id, driver_id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
