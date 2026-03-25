@@ -11,19 +11,19 @@ def create_notifications(delivery: Delivery, notification_type: NotificationType
 
 
 @router.get("/{delivery_id}", response_model=list[Notification])
-def get_notifications(delivery_id:int):
+def get_notifications(delivery_id:str):
     return notifications_service.get_notifications(delivery_id)
 
 
 @router.patch("/{delivery_id}/{notification_id}/read", response_model=Notification)
-def mark_as_read(delivery_id: int, notification_id: int):
+def mark_as_read(delivery_id: str, notification_id: str):
     try:
         return notifications_service.mark_as_read(delivery_id, notification_id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     
 @router.delete("/{delivery_id}/{notification_id}")
-def delete_notification(delivery_id: int,notification_id: int):
+def delete_notification(delivery_id: str,notification_id: str):
     try: 
         notifications_service.delete_notification(delivery_id,notification_id)
         return {"message": f"Notifications for {delivery_id} deleted"}

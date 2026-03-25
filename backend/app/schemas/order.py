@@ -23,10 +23,12 @@ class OrderCreate(BaseModel):
     restaurant_id: str
     customer_id: str
     items: List[OrderItem] = Field(..., min_length=1)
+    delivery_address: Optional[str] = None
     @field_validator("restaurant_id", mode="before")
     @classmethod
     def coerce_restaurant_id_to_str(cls, v):
         return str(v)
+    
 
 
 class OrderUpdate(BaseModel):
@@ -45,3 +47,4 @@ class Order(BaseModel):
     @classmethod
     def coerce_restaurant_id_to_str(cls, v):
         return str(v)
+    delivery_address: Optional[str] = None

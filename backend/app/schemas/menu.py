@@ -12,4 +12,3 @@ class Menu(MenuCreate):
 class MenuUpdate(BaseModel):
     name: str = Field(None, min_length=3, max_length=50)
     description: str= Field(None, max_length=300)
-    #restaurant shouldn't have to be updated
