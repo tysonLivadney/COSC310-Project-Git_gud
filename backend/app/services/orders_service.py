@@ -59,6 +59,7 @@ def create_order(payload: OrderCreate) -> Order:
         items=payload.items,
         status=OrderStatus.DRAFT,
         created_at=datetime.now(timezone.utc).isoformat(),
+        delivery_address=delivery_address,
     )
     orders.append(new_order.model_dump())
     save_all(orders)
