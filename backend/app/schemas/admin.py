@@ -3,7 +3,7 @@ from typing import List, Optional
 
 
 class RestaurantRevenue(BaseModel):
-    restaurant_id: int
+    restaurant_id: str
     total_revenue: float
     order_count: int
 

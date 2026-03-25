@@ -6,7 +6,7 @@ from repositories.orders_repo import load_all
 
 def list_all_orders(
     customer_id: Optional[str] = None,
-    restaurant_id: Optional[int] = None,
+    restaurant_id: Optional[str] = None,
     status: Optional[OrderStatus] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
@@ -14,9 +14,9 @@ def list_all_orders(
     orders = load_all()
 
     if customer_id:
-        orders = [o for o in orders if o.get("customer_id") == customer_id]
+        orders = [o for o in orders if o.get("customer_id") == str(customer_id)]
     if restaurant_id is not None:
-        orders = [o for o in orders if o.get("restaurant_id") == restaurant_id]
+        orders = [o for o in orders if o.get("restaurant_id") == str(restaurant_id)]
     if status:
         orders = [o for o in orders if o.get("status") == status.value]
     if date_from:

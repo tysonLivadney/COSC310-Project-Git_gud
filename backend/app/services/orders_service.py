@@ -81,11 +81,10 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
             order = Order(**o)
             customer_location = location_service.get_user_location(order.customer_id)
             restaurant_location = location_service.get_restaurant_location(order.restaurant_id)
-            if customer_location is None:
-                raise HTTPException(status_code=400, detail="Customer location not found.")
-            if restaurant_location is None:
-                raise HTTPException(status_code=400, detail="Restaurant location not found.")
-            distance_km = Decimal(str(location_service.calculate_distance_between(customer_location, restaurant_location)))
+            if customer_location is None or restaurant_location is None:
+                distance_km = Decimal("1.0")
+            else:
+                distance_km = Decimal(str(location_service.calculate_distance_between(customer_location, restaurant_location)))
             province = "BC" 
             subtotal, tax_rate, tax, delivery_fee, total = OrderTotalService.calculate_order_total(   
                 order, 

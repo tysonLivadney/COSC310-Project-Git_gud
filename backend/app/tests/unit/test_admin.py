@@ -6,6 +6,13 @@ import pytest
 from main import app
 
 client = TestClient(app)
+TEST_PAYLOAD = {
+    "payment_info": {
+        "card_number": "4242424242424242",
+        "expiry": "12/26",
+        "cvv": "805"
+    }
+}
 
 MANAGER_USER = {
     "name": "Admin User",
@@ -22,13 +29,13 @@ REGULAR_USER = {
 }
 
 SAMPLE_ORDER = {
-    "restaurant_id": 1,
+    "restaurant_id": "1",
     "customer_id": "customer-1",
     "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
 }
 
 SAMPLE_ORDER_2 = {
-    "restaurant_id": 2,
+    "restaurant_id": "2",
     "customer_id": "customer-2",
     "items": [{"food_item": "Pizza", "quantity": 1, "unit_price": 15.00}],
 }
@@ -118,18 +125,18 @@ def test_filter_orders_by_restaurant(manager_token):
     client.post("/orders", json=SAMPLE_ORDER_2)
 
     response = client.get(
-        "/admin/orders", params={"restaurant_id": 2},
+        "/admin/orders", params={"restaurant_id": "2"},
         headers=_auth_header(manager_token),
     )
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["restaurant_id"] == 2
+    assert data[0]["restaurant_id"] == "2"
 
 
 def test_filter_orders_by_status(manager_token):
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     client.post("/orders", json=SAMPLE_ORDER_2)
 
     response = client.get(
@@ -164,14 +171,14 @@ def test_reports_empty(manager_token):
 
 def test_reports_with_confirmed_orders(manager_token):
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
 
     response = client.get("/admin/reports", headers=_auth_header(manager_token))
     assert response.status_code == 200
     data = response.json()
     assert data["total_revenue"] == 20.00  # 2 * 10.00
     assert len(data["revenue_per_restaurant"]) == 1
-    assert data["revenue_per_restaurant"][0]["restaurant_id"] == 1
+    assert data["revenue_per_restaurant"][0]["restaurant_id"] == "1"
     assert data["revenue_per_restaurant"][0]["order_count"] == 1
 
 
@@ -185,9 +192,9 @@ def test_reports_ignores_draft_orders(manager_token):
 
 def test_reports_multiple_restaurants(manager_token):
     order1 = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order1['id']}/confirm")
+    client.post(f"/orders/{order1['id']}/confirm", json=TEST_PAYLOAD)
     order2 = client.post("/orders", json=SAMPLE_ORDER_2).json()
-    client.post(f"/orders/{order2['id']}/confirm")
+    client.post(f"/orders/{order2['id']}/confirm", json=TEST_PAYLOAD)
 
     response = client.get("/admin/reports", headers=_auth_header(manager_token))
     assert response.status_code == 200
