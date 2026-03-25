@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status as http_status
 from typing import List, Optional
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from services.orders_service import (
@@ -38,7 +38,7 @@ def post_confirm_order(order_id: str):
     return confirm_order(order_id)
 
 
-@router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{order_id}", status_code=http_status.HTTP_204_NO_CONTENT)
 def delete_order(order_id: str):
     cancel_order(order_id)
     return None

@@ -1,10 +1,23 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from fastapi import HTTPException
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from repositories.orders_repo import load_all, save_all
 from repositories.users_repo import load_all as load_all_users
+
+
+def _find_order(order_id: str) -> Tuple[int, dict, list]:
+    orders = load_all()
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+            return idx, o, orders
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+
+def _require_draft(order: dict, action: str) -> None:
+    if order.get("status") != OrderStatus.DRAFT.value:
+        raise HTTPException(status_code=400, detail=f"Only draft orders can be {action}.")
 
 
 def list_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None) -> List[Order]:
@@ -42,10 +55,8 @@ def create_order(payload: OrderCreate) -> Order:
 
 
 def get_order_by_id(order_id: str) -> Order:
-    for o in load_all():
-        if o.get("id") == order_id:
-            return Order(**o)
-    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+    _, order, _ = _find_order(order_id)
+    return Order(**order)
 
 
 def update_order(order_id: str, payload: OrderUpdate) -> Order:
@@ -73,33 +84,34 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
 
 
 def confirm_order(order_id: str) -> Order:
-    orders = load_all()
-    for idx, o in enumerate(orders):
-        if o.get("id") == order_id:
-            if o.get("status") != OrderStatus.DRAFT.value:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Only draft orders can be confirmed.",
-                )
-            o["status"] = OrderStatus.CONFIRMED.value
-            o["confirmed_at"] = datetime.now(timezone.utc).isoformat()
-            orders[idx] = o
-            save_all(orders)
-            return Order(**o)
-    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+    idx, o, orders = _find_order(order_id)
+    _require_draft(o, "confirmed")
+    confirmed = Order(
+        id=order_id,
+        restaurant_id=o["restaurant_id"],
+        customer_id=o["customer_id"],
+        items=[item for item in o["items"]],
+        delivery_address=o.get("delivery_address"),
+        status=OrderStatus.CONFIRMED,
+        created_at=o["created_at"],
+        confirmed_at=datetime.now(timezone.utc).isoformat(),
+    )
+    orders[idx] = confirmed.model_dump()
+    save_all(orders)
+    return confirmed
 
 
 def cancel_order(order_id: str) -> None:
-    orders = load_all()
-    for idx, o in enumerate(orders):
-        if o.get("id") == order_id:
-            if o.get("status") != OrderStatus.DRAFT.value:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Only draft orders can be cancelled.",
-                )
-            o["status"] = OrderStatus.CANCELLED.value
-            orders[idx] = o
-            save_all(orders)
-            return
-    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+    idx, o, orders = _find_order(order_id)
+    _require_draft(o, "cancelled")
+    cancelled = Order(
+        id=order_id,
+        restaurant_id=o["restaurant_id"],
+        customer_id=o["customer_id"],
+        items=[item for item in o["items"]],
+        delivery_address=o.get("delivery_address"),
+        status=OrderStatus.CANCELLED,
+        created_at=o["created_at"],
+    )
+    orders[idx] = cancelled.model_dump()
+    save_all(orders)
