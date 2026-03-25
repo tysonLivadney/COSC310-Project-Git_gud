@@ -106,3 +106,57 @@ def test_get_order_by_id():
 def test_get_order_not_found():
     response = client.get("/orders/nonexistent-id")
     assert response.status_code == 404
+
+
+#PUT /orders/{id} tests
+def test_update_order_items():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    new_items = [{"food_item": "Fries", "quantity": 3, "unit_price": 5.00}]
+    response = client.put(f"/orders/{order['id']}", json={"items": new_items})
+    assert response.status_code == 200
+    assert response.json()["items"][0]["food_item"] == "Fries"
+    assert response.json()["restaurant_id"] == 1
+
+
+def test_update_keeps_original_customer():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    new_items = [{"food_item": "Salad", "quantity": 1, "unit_price": 8.00}]
+    response = client.put(f"/orders/{order['id']}", json={"items": new_items})
+    assert response.status_code == 200
+    assert response.json()["customer_id"] == "customer-1"
+
+
+def test_update_confirmed_order_fails():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm")
+    new_items = [{"food_item": "Fries", "quantity": 1, "unit_price": 5.00}]
+    response = client.put(f"/orders/{order['id']}", json={"items": new_items})
+    assert response.status_code == 400
+
+
+def test_update_nonexistent_order():
+    response = client.put("/orders/fake-id", json={
+        "items": [{"food_item": "Burger", "quantity": 1, "unit_price": 10.00}],
+    })
+    assert response.status_code == 404
+
+
+#POST /orders/{id}/confirm tests
+def test_confirm_order():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    response = client.post(f"/orders/{order['id']}/confirm")
+    assert response.status_code == 200
+    assert response.json()["status"] == "confirmed"
+    assert response.json()["confirmed_at"] is not None
+
+
+def test_confirm_already_confirmed():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm")
+    response = client.post(f"/orders/{order['id']}/confirm")
+    assert response.status_code == 400
+
+
+def test_confirm_nonexistent_order():
+    response = client.post("/orders/fake-id/confirm")
+    assert response.status_code == 404
