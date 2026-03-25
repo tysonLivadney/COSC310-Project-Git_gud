@@ -55,7 +55,7 @@ def create_review(payload: ReviewCreate, user_id: str) -> Review:
         created_at=now,
     )
     reviews = load_all()
-    reviews.append(review.dict())
+    reviews.append(review.model_dump())
     save_all(reviews)
     return review
 

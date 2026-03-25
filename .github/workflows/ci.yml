@@ -32,7 +32,7 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: backend/app
-        run: pytest --import-mode=importlib --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml tests ../test
+        run: pytest --import-mode=importlib --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml tests
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
