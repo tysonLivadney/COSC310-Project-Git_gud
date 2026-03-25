@@ -1,0 +1,134 @@
+import pytest
+from unittest.mock import patch
+from services.auth_service import register_user, _build_user_response
+from services.orders_service import create_order, update_order
+from schemas.auth import RegisterRequest, Role
+from schemas.order import OrderCreate, OrderUpdate, OrderItem
+
+
+# ---------------------------------------------------------------------------
+# register_user tests
+# ---------------------------------------------------------------------------
+
+def test_register_user_stores_address():
+    payload = RegisterRequest(
+        name="Alice",
+        email="alice@example.com",
+        password="password123",
+        role="user",
+        address="123 Main St",
+    )
+    with patch("services.auth_service.load_all_users", return_value=[]), \
+         patch("services.auth_service.save_all_users") as mock_save:
+        result = register_user(payload)
+    assert result.address == "123 Main St"
+
+
+def test_register_user_without_address():
+    payload = RegisterRequest(
+        name="Bob",
+        email="bob@example.com",
+        password="password123",
+        role="user",
+    )
+    with patch("services.auth_service.load_all_users", return_value=[]), \
+         patch("services.auth_service.save_all_users"):
+        result = register_user(payload)
+    assert result.address is None
+
+
+# ---------------------------------------------------------------------------
+# _build_user_response tests
+# ---------------------------------------------------------------------------
+
+def test_build_user_response_includes_address():
+    user_dict = {
+        "id": "u1",
+        "name": "Carol",
+        "email": "carol@example.com",
+        "role": "user",
+        "created_at": "2024-01-01T00:00:00Z",
+        "address": "123 Main St",
+    }
+    result = _build_user_response(user_dict)
+    assert result.address == "123 Main St"
+
+
+def test_build_user_response_missing_address_key():
+    user_dict = {
+        "id": "u2",
+        "name": "Dave",
+        "email": "dave@example.com",
+        "role": "user",
+        "created_at": "2024-01-01T00:00:00Z",
+    }
+    result = _build_user_response(user_dict)
+    assert result.address is None
+
+
+# ---------------------------------------------------------------------------
+# create_order tests
+# ---------------------------------------------------------------------------
+
+def test_create_order_with_explicit_delivery_address():
+    payload = OrderCreate(
+        restaurant_id=1,
+        customer_id="cust1",
+        items=[OrderItem(food_item="Burger", quantity=1, unit_price=9.99)],
+        delivery_address="456 Elm St",
+    )
+    with patch("services.orders_service.load_all", return_value=[]), \
+         patch("services.orders_service.save_all"):
+        result = create_order(payload)
+    assert result.delivery_address == "456 Elm St"
+
+
+def test_create_order_falls_back_to_user_address():
+    payload = OrderCreate(
+        restaurant_id=1,
+        customer_id="cust2",
+        items=[OrderItem(food_item="Pizza", quantity=1, unit_price=12.99)],
+    )
+    mock_users = [{"id": "cust2", "address": "789 Oak Ave"}]
+    with patch("services.orders_service.load_all", return_value=[]), \
+         patch("services.orders_service.save_all"), \
+         patch("services.orders_service.load_all_users", return_value=mock_users):
+        result = create_order(payload)
+    assert result.delivery_address == "789 Oak Ave"
+
+
+def test_create_order_no_address_anywhere():
+    payload = OrderCreate(
+        restaurant_id=1,
+        customer_id="cust3",
+        items=[OrderItem(food_item="Salad", quantity=1, unit_price=7.99)],
+    )
+    mock_users = [{"id": "cust3"}]
+    with patch("services.orders_service.load_all", return_value=[]), \
+         patch("services.orders_service.save_all"), \
+         patch("services.orders_service.load_all_users", return_value=mock_users):
+        result = create_order(payload)
+    assert result.delivery_address is None
+
+
+# ---------------------------------------------------------------------------
+# update_order tests
+# ---------------------------------------------------------------------------
+
+def test_update_order_preserves_delivery_address():
+    existing_order = {
+        "id": "order1",
+        "restaurant_id": 1,
+        "customer_id": "cust1",
+        "items": [{"food_item": "Burger", "quantity": 1, "unit_price": 9.99}],
+        "status": "draft",
+        "created_at": "2024-01-01T00:00:00Z",
+        "delivery_address": "123 Keep St",
+    }
+    payload = OrderUpdate(
+        items=[OrderItem(food_item="Pasta", quantity=2, unit_price=11.50)],
+    )
+    with patch("services.orders_service.load_all", return_value=[existing_order]), \
+         patch("services.orders_service.save_all"):
+        result = update_order("order1", payload)
+    assert result.delivery_address == "123 Keep St"

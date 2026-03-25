@@ -106,9 +106,8 @@ def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     _update(delivery)
     return delivery
 
-def cancel_delivery(delivery_id: str, current_user_id: str) -> Delivery:
+def cancel_delivery(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
-    _check_assigned_driver(delivery, current_user_id)
     if delivery.status == DeliveryStatus.DELIVERED:
         raise ValueError("Cannot cancel completed delivery")
     delivery.status = DeliveryStatus.CANCELLED

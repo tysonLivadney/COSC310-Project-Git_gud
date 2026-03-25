@@ -66,9 +66,9 @@ def complete_delivery(delivery_id: str, current_user: UserResponse = Depends(get
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{delivery_id}/cancel", response_model=Delivery)
-def cancel_delivery(delivery_id: str, current_user: UserResponse = Depends(get_current_user)):
+def cancel_delivery(delivery_id: str):
     try:
-        return delivery_service.cancel_delivery(delivery_id, current_user.id)
+        return delivery_service.cancel_delivery(delivery_id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
