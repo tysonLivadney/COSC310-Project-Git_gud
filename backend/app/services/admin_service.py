@@ -4,6 +4,21 @@ from schemas.admin import AdminReport, RestaurantRevenue
 from repositories.orders_repo import load_all
 
 
+def _filter_by_date_range(orders: list, date_from: Optional[str], date_to: Optional[str]) -> list:
+    if date_from:
+        orders = [o for o in orders if o.get("created_at", "") >= date_from]
+    if date_to:
+        orders = [o for o in orders if o.get("created_at", "") <= date_to]
+    return orders
+
+
+def _calculate_order_revenue(order: dict) -> float:
+    return sum(
+        item.get("quantity", 0) * item.get("unit_price", 0)
+        for item in order.get("items", [])
+    )
+
+
 def list_all_orders(
     customer_id: Optional[str] = None,
     restaurant_id: Optional[int] = None,
@@ -19,10 +34,8 @@ def list_all_orders(
         orders = [o for o in orders if o.get("restaurant_id") == restaurant_id]
     if status:
         orders = [o for o in orders if o.get("status") == status.value]
-    if date_from:
-        orders = [o for o in orders if o.get("created_at", "") >= date_from]
-    if date_to:
-        orders = [o for o in orders if o.get("created_at", "") <= date_to]
+
+    orders = _filter_by_date_range(orders, date_from, date_to)
 
     return [Order(**o) for o in orders]
 
@@ -38,19 +51,13 @@ def generate_report(
         if o.get("status") in (OrderStatus.CONFIRMED.value, OrderStatus.COMPLETED.value)
     ]
 
-    if date_from:
-        billable = [o for o in billable if o.get("created_at", "") >= date_from]
-    if date_to:
-        billable = [o for o in billable if o.get("created_at", "") <= date_to]
+    billable = _filter_by_date_range(billable, date_from, date_to)
 
     total_revenue = 0.0
     restaurant_map = {}
 
     for o in billable:
-        order_total = sum(
-            item.get("quantity", 0) * item.get("unit_price", 0)
-            for item in o.get("items", [])
-        )
+        order_total = _calculate_order_revenue(o)
         total_revenue += order_total
 
         rid = o.get("restaurant_id")
