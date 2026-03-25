@@ -1,11 +1,13 @@
 from fastapi.testclient import TestClient
 from main import app
+from services.auth_service import get_current_user
+from schemas.auth import UserResponse
 
 client = TestClient(app)
 
 DRIVER_USER = {
     "name": "John Smith",
-    "email": "driver@test.com",
+    "email": "driver2@test.com",
     "password": "password123",
     "role": "driver",
 }
@@ -18,6 +20,7 @@ VALID_PROFILE = {
 
 
 def _setup_driver():
+    app.dependency_overrides.pop(get_current_user, None)
     client.post("/auth/register", json=DRIVER_USER)
     login = client.post("/auth/login", json={
         "email": DRIVER_USER["email"],
@@ -26,6 +29,9 @@ def _setup_driver():
     token = login["token"]
     driver_id = login["user"]["id"]
     client.post("/drivers/profile", json=VALID_PROFILE, headers={"Authorization": f"Bearer {token}"})
+    app.dependency_overrides[get_current_user] = lambda: UserResponse(
+        id=driver_id, name="John Smith", email="john@test.com", role="driver", created_at="2024-01-01T00:00:00Z"
+    )
     return driver_id
 
 def test_create_delivery():

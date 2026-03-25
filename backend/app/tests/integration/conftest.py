@@ -14,7 +14,7 @@ from schemas.auth import UserResponse
 
 
 def _mock_driver():
-    return UserResponse(id="1", name="John Smith", email="john@test.com", role="user", created_at="2024-01-01T00:00:00Z")
+    return UserResponse(id="1", name="John Smith", email="john@test.com", role="driver", created_at="2024-01-01T00:00:00Z")
 
 client = TestClient(app)
 
@@ -90,6 +90,7 @@ def test_delivery():
 
 @pytest.fixture
 def registered_driver():
+    app.dependency_overrides.pop(get_current_user, None)
     client.post("/auth/register", json=DRIVER_USER)
     login = client.post("/auth/login", json={
         "email": DRIVER_USER["email"],
@@ -98,6 +99,7 @@ def registered_driver():
     token = login["token"]
     driver_id = login["user"]["id"]
     client.post("/drivers/profile", json=VALID_PROFILE, headers={"Authorization": f"Bearer {token}"})
+    app.dependency_overrides[get_current_user] = lambda: UserResponse(id=driver_id, name="John Smith", email="john@test.com", role="driver", created_at="2024-01-01T00:00:00Z")
     return driver_id
 
 @pytest.fixture
