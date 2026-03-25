@@ -1,11 +1,11 @@
 from schemas import Delivery, DeliveryStatus, Driver
 from datetime import datetime
 from typing import Optional
+from fastapi import HTTPException
 from repositories.delivery_repo import load_all, save_all
 from repositories.orders_repo import load_all as load_all_orders
 from repositories.restaurants_repo import load_all as load_all_restaurants
 from uuid import uuid4
-from fastapi import HTTPException
 
 
 
@@ -66,6 +66,10 @@ def delete_delivery(delivery_id: str) -> None:
             return
     raise KeyError(f"Delivery {delivery_id} not found")
 
+def _check_assigned_driver(delivery: Delivery, current_user_id: str) -> None:
+    if delivery.driver is None or delivery.driver.id != current_user_id:
+        raise HTTPException(status_code=403, detail="You are not the assigned driver for this delivery")
+
 def assign_driver(delivery_id: str, driver: Driver) -> Delivery:
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.ASSIGNED)
@@ -75,32 +79,36 @@ def assign_driver(delivery_id: str, driver: Driver) -> Delivery:
     _update(delivery)
     return delivery
 
-def pickup_delivery(delivery_id: str) -> Delivery:
+def pickup_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
+    _check_assigned_driver(delivery, current_user_id)
     _validate_transition(delivery.status, DeliveryStatus.PICKED_UP)
     delivery.status = DeliveryStatus.PICKED_UP
     delivery.updated_at = datetime.now()
     _update(delivery)
     return delivery
 
-def start_transit(delivery_id: str) -> Delivery:
+def start_transit(delivery_id: str, current_user_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
+    _check_assigned_driver(delivery, current_user_id)
     _validate_transition(delivery.status, DeliveryStatus.IN_TRANSIT)
     delivery.status = DeliveryStatus.IN_TRANSIT
     delivery.updated_at = datetime.now()
     _update(delivery)
     return delivery
 
-def complete_delivery(delivery_id: str) -> Delivery:
+def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
+    _check_assigned_driver(delivery, current_user_id)
     _validate_transition(delivery.status, DeliveryStatus.DELIVERED)
     delivery.status = DeliveryStatus.DELIVERED
     delivery.updated_at = datetime.now()
     _update(delivery)
     return delivery
 
-def cancel_delivery(delivery_id: str) -> Delivery:
+def cancel_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
+    _check_assigned_driver(delivery, current_user_id)
     if delivery.status == DeliveryStatus.DELIVERED:
         raise ValueError("Cannot cancel completed delivery")
     delivery.status = DeliveryStatus.CANCELLED

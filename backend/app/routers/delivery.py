@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
 from schemas import Delivery, Driver
+from schemas.auth import UserResponse
 from services import delivery_service
+from services.auth_service import get_current_user
 
 router = APIRouter(prefix="/deliveries", tags=["deliveries"])
 @router.post("/", response_model=Delivery)
@@ -37,36 +39,36 @@ def assign_driver(delivery_id: str, driver:Driver):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{delivery_id}/pickup", response_model=Delivery)
-def pickup_delivery(delivery_id: str):
+def pickup_delivery(delivery_id: str, current_user: UserResponse = Depends(get_current_user)):
     try:
-        return delivery_service.pickup_delivery(delivery_id)
+        return delivery_service.pickup_delivery(delivery_id, current_user.id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{delivery_id}/transit", response_model=Delivery)
-def start_transit(delivery_id: str):
+def start_transit(delivery_id: str, current_user: UserResponse = Depends(get_current_user)):
     try:
-        return delivery_service.start_transit(delivery_id)
+        return delivery_service.start_transit(delivery_id, current_user.id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{delivery_id}/complete", response_model=Delivery)
-def complete_delivery(delivery_id: str):
+def complete_delivery(delivery_id: str, current_user: UserResponse = Depends(get_current_user)):
     try:
-        return delivery_service.complete_delivery(delivery_id)
+        return delivery_service.complete_delivery(delivery_id, current_user.id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{delivery_id}/cancel", response_model=Delivery)
-def cancel_delivery(delivery_id: str):
+def cancel_delivery(delivery_id: str, current_user: UserResponse = Depends(get_current_user)):
     try:
-        return delivery_service.cancel_delivery(delivery_id)
+        return delivery_service.cancel_delivery(delivery_id, current_user.id)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
