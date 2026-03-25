@@ -1,10 +1,16 @@
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import List, Optional
 from fastapi import HTTPException
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from repositories.orders_repo import load_all, save_all
+from services.location_service import LocationService
+from services.order_total_calculator import OrderTotalService
+from services.payment_service import PaymentService
+from schemas.payment import PaymentInfo, PaymentProcessRequest
 
+location_service = LocationService()
 
 def list_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None) -> List[Order]:
     orders = load_all()
@@ -63,7 +69,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
     raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
 
-def confirm_order(order_id: str) -> Order:
+def confirm_order(order_id: str, payment_info: PaymentInfo):
     orders = load_all()
     for idx, o in enumerate(orders):
         if o.get("id") == order_id:
@@ -72,11 +78,45 @@ def confirm_order(order_id: str) -> Order:
                     status_code=400,
                     detail="Only draft orders can be confirmed.",
                 )
+            order = Order(**o)
+            customer_location = location_service.get_user_location(order.customer_id)
+            restaurant_location = location_service.get_restaurant_location(order.restaurant_id)
+            if customer_location is None:
+                raise HTTPException(status_code=400, detail="Customer location not found.")
+            if restaurant_location is None:
+                raise HTTPException(status_code=400, detail="Restaurant location not found.")
+            distance_km = Decimal(str(location_service.calculate_distance_between(customer_location, restaurant_location)))
+            province = "BC" 
+            subtotal, tax_rate, tax, delivery_fee, total = OrderTotalService.calculate_order_total(   
+                order, 
+                province, 
+                distance_km)
+            payment_request = PaymentProcessRequest(
+                order_id=order_id,
+                total = total,
+                payment_info = payment_info)
+            payment_result = PaymentService.process_payment(payment_request)
             o["status"] = OrderStatus.CONFIRMED.value
             o["confirmed_at"] = datetime.now(timezone.utc).isoformat()
+            o["subtotal"] = str(subtotal)
+            o["tax"] = str(tax)
+            o["delivery_fee"] = str(delivery_fee)
+            o["total"] = str(total)
             orders[idx] = o
             save_all(orders)
-            return Order(**o)
+            return {
+                "order_id": o["id"],
+                "status": o["status"],
+                "confirmed_at": o["confirmed_at"],
+                "payment": payment_result,
+                "distance_km": float(distance_km),
+                "subtotal": str(subtotal),
+                "tax_rate": str(tax_rate),
+                "tax": str(tax),
+                "delivery_fee": str(delivery_fee),
+                "total": str(total),
+                "province": province,
+            }
     raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
 

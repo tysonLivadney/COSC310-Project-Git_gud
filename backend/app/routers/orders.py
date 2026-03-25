@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 from typing import List, Optional
-from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
+from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus, OrderConfirmRequest
 from services.orders_service import (
     list_orders,
     create_order,
@@ -11,7 +11,6 @@ from services.orders_service import (
 )
 
 router = APIRouter(prefix="/orders", tags=["orders"])
-
 
 @router.get("", response_model=List[Order])
 def get_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None):
@@ -33,9 +32,9 @@ def put_order(order_id: str, payload: OrderUpdate):
     return update_order(order_id, payload)
 
 
-@router.post("/{order_id}/confirm", response_model=Order)
-def post_confirm_order(order_id: str):
-    return confirm_order(order_id)
+@router.post("/{order_id}/confirm")
+def post_confirm_order(order_id: str, payload: OrderConfirmRequest):
+    return confirm_order(order_id, payload.payment_info)
 
 
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)

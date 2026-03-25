@@ -1,7 +1,10 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
+from schemas.payment import PaymentInfo
 
+class OrderConfirmRequest(BaseModel):
+    payment_info: PaymentInfo
 
 class OrderStatus(str, Enum):
     DRAFT = "draft"
@@ -17,7 +20,7 @@ class OrderItem(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    restaurant_id: int
+    restaurant_id: str
     customer_id: str
     items: List[OrderItem] = Field(..., min_length=1)
 
@@ -28,7 +31,7 @@ class OrderUpdate(BaseModel):
 
 class Order(BaseModel):
     id: str
-    restaurant_id: int
+    restaurant_id: str
     customer_id: str
     items: List[OrderItem]
     status: OrderStatus = OrderStatus.DRAFT

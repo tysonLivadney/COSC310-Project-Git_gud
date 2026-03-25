@@ -7,19 +7,19 @@ class Location(BaseModel):
     address: Optional[str] = None
 
 class UpdateUserLocationRequest(BaseModel):
-    user_id: int
+    user_id: str
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     address: Optional[str] = None
 
 class UpdateDriverLocationRequest(BaseModel):
-    driver_id: int
+    driver_id: str
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     address: Optional[str] = None
 
 class UpdateRestaurantLocationRequest(BaseModel):
-    restaurant_id: int
+    restaurant_id: str
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     address: Optional[str] = None
