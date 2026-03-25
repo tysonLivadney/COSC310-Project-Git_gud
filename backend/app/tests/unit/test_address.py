@@ -1,14 +1,13 @@
 import pytest
 from unittest.mock import patch
+from fastapi import HTTPException
 from services.auth_service import register_user, _build_user_response
+from services.delivery_service import create_delivery
 from services.orders_service import create_order, update_order
 from schemas.auth import RegisterRequest, Role
 from schemas.order import OrderCreate, OrderUpdate, OrderItem
 
 
-# ---------------------------------------------------------------------------
-# register_user tests
-# ---------------------------------------------------------------------------
 
 def test_register_user_stores_address():
     payload = RegisterRequest(
@@ -37,10 +36,6 @@ def test_register_user_without_address():
     assert result.address is None
 
 
-# ---------------------------------------------------------------------------
-# _build_user_response tests
-# ---------------------------------------------------------------------------
-
 def test_build_user_response_includes_address():
     user_dict = {
         "id": "u1",
@@ -65,10 +60,6 @@ def test_build_user_response_missing_address_key():
     result = _build_user_response(user_dict)
     assert result.address is None
 
-
-# ---------------------------------------------------------------------------
-# create_order tests
-# ---------------------------------------------------------------------------
 
 def test_create_order_with_explicit_delivery_address():
     payload = OrderCreate(
@@ -111,10 +102,6 @@ def test_create_order_no_address_anywhere():
     assert result.delivery_address is None
 
 
-# ---------------------------------------------------------------------------
-# update_order tests
-# ---------------------------------------------------------------------------
-
 def test_update_order_preserves_delivery_address():
     existing_order = {
         "id": "order1",
@@ -132,3 +119,31 @@ def test_update_order_preserves_delivery_address():
          patch("services.orders_service.save_all"):
         result = update_order("order1", payload)
     assert result.delivery_address == "123 Keep St"
+
+
+def test_create_delivery_autofills_dropoff_from_order():
+    mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
+    mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
+    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
+         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+        result = create_delivery("order1")
+    assert result.dropoff_address == "456 Dropoff Ave"
+
+
+def test_create_delivery_autofills_pickup_from_restaurant():
+    mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
+    mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
+    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
+         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+        result = create_delivery("order1")
+    assert result.pickup_address == "123 Pickup St"
+
+
+def test_create_delivery_explicit_addresses_not_overridden():
+    mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
+    mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
+    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
+         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+        result = create_delivery("order1", pickup_address="Custom Pickup", dropoff_address="Custom Dropoff")
+    assert result.pickup_address == "Custom Pickup"
+    assert result.dropoff_address == "Custom Dropoff"

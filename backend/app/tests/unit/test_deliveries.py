@@ -145,5 +145,30 @@ def test_cancel_completed_delivery():
 def test_cancel_delivery_not_found():
     with pytest.raises(KeyError):
         delivery_service.cancel_delivery("999999")
+
+
+def test_pickup_delivery_wrong_driver():
+    delivery = delivery_service.create_delivery("100", "Pickup", "Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    with pytest.raises(HTTPException) as exc_info:
+        delivery_service.pickup_delivery(delivery.id, "wrong-driver-id")
+    assert exc_info.value.status_code == 403
+
+def test_start_transit_wrong_driver():
+    delivery = delivery_service.create_delivery("100", "Pickup", "Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    delivery_service.pickup_delivery(delivery.id, "1")
+    with pytest.raises(HTTPException) as exc_info:
+        delivery_service.start_transit(delivery.id, "wrong-driver-id")
+    assert exc_info.value.status_code == 403
+
+def test_complete_delivery_wrong_driver():
+    delivery = delivery_service.create_delivery("100", "Pickup", "Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    delivery_service.pickup_delivery(delivery.id, "1")
+    delivery_service.start_transit(delivery.id, "1")
+    with pytest.raises(HTTPException) as exc_info:
+        delivery_service.complete_delivery(delivery.id, "wrong-driver-id")
+    assert exc_info.value.status_code == 403
         
         
