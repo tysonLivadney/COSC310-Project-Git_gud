@@ -2,6 +2,16 @@ from decimal import Decimal
 from fastapi import HTTPException
 from schemas.payment import PaymentProcessRequest, PaymentInfo
 from services.payment_service import PaymentService
+from repositories.payments_repo import load_all, save_all
+import pytest
+
+@pytest.fixture(autouse = True)
+def save_and_restore():
+    payments = load_all()
+    save_all([])
+    yield
+    save_all(payments)
+
 
 
 VALID_PAYMENT_INFO = {
