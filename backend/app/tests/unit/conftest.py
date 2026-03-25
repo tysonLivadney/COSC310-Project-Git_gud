@@ -1,14 +1,16 @@
 from fastapi.testclient import TestClient
-from fastapi import FastAPI, status
 import pytest
-from pathlib import Path
 from main import app
-from uuid import uuid4
-from schemas.delivery import Delivery, DeliveryStatus
+from pathlib import Path
+from repositories.restaurants_repo import save_all as save_restaurants, load_all as load_restaurants
+from repositories.menus_repo import save_all as save_menus, load_all as load_menus
+from repositories.menu_items_repo import save_all as save_menu_items, load_all as load_menu_items
+from schemas.delivery import Delivery
 from schemas.notifications import NotificationType
 from services import notifications_service
-
 client = TestClient(app)
+
+
 
 VALID_RESTAURANT = {
     "name": "Test Restaurant",
@@ -33,11 +35,40 @@ VALID_MENU_ITEM = {
 }
 
 VALID_DRIVER = {
-    "id": 1,
+    "id": "1",
     "name": "John Smith",
     "phone": "+123456789",
     "status": "online"
 }
+
+VALID_DELIVERY = {
+    "id": "1",
+    "order_id": "101",
+    "pickup_address": "123 Pickup St",
+    "dropoff_address": "456 Dropoff Ave",
+    "status": "pending"
+}
+
+
+
+DATA_FILE = Path("data/notifications.json")
+DATA_FILE_DELIVERIES = Path("data/deliveries.json")
+
+@pytest.fixture(autouse=True)
+def clean_data_file():
+    if DATA_FILE.exists():
+        DATA_FILE.write_text("[]")
+    yield
+    if DATA_FILE.exists():
+        DATA_FILE.write_text("[]")
+
+@pytest.fixture(autouse=True)
+def clean_delivery_file():
+    if DATA_FILE_DELIVERIES.exists():
+        DATA_FILE_DELIVERIES.write_text("[]")
+    yield
+    if DATA_FILE_DELIVERIES.exists():
+        DATA_FILE_DELIVERIES.write_text("[]")
 
 @pytest.fixture(autouse=True)
 def save_and_restore():
@@ -51,33 +82,61 @@ def save_and_restore():
     save_restaurants(restaurants)
     save_menus(menus)
     save_menu_items(menu_items)
-from uuid import uuid4
-import pytest
-from schemas.delivery import Delivery, DeliveryStatus
-from schemas.notifications import NotificationType
-from services import notifications_service
-from pathlib import Path
 
-DATA_FILE_NOTIFICATIONS = Path("data/notifications.json")
 
-@pytest.fixture(autouse=True)
-def clean_notifications_file():
-    if DATA_FILE_NOTIFICATIONS.exists():
-        DATA_FILE_NOTIFICATIONS.write_text("[]")
-    yield
-    if DATA_FILE_NOTIFICATIONS.exists():
-        DATA_FILE_NOTIFICATIONS.write_text("[]")
+
+@pytest.fixture
+def test_delivery():
+    response = client.post("/deliveries/", params={
+        "order_id": 101,
+        "pickup_address": "123 Pickup St",
+        "dropoff_address": "456 Dropoff Ave"
+    })
+    assert response.status_code == 200
+    return response.json()
 
 @pytest.fixture
 def sample_delivery():
-    return Delivery(
-        id=str(uuid4()),
-        order_id="101",
-        pickup_address="123 Pickup St",
-        dropoff_address="456 Dropoff Ave",
-        status=DeliveryStatus.PENDING
-    )
+    response = client.post("/deliveries/", params={
+        "order_id": 101,
+        "pickup_address": "123 Pickup St",
+        "dropoff_address": "456 Dropoff Ave"
+    })
+    assert response.status_code == 200
+    return Delivery(**response.json())
 
 @pytest.fixture
 def sample_notification(sample_delivery):
     return notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
+
+@pytest.fixture
+def test_assigned_delivery(test_delivery):
+    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", json=VALID_DRIVER)
+    assert response.status_code == 200
+    return response.json()
+
+@pytest.fixture
+def test_picked_up_delivery(test_assigned_delivery):
+    response = client.patch(f"/deliveries/{test_assigned_delivery['id']}/pickup")
+    assert response.status_code == 200
+    return response.json()
+
+@pytest.fixture
+def test_in_transit_delivery(test_picked_up_delivery):
+    response = client.patch(f"/deliveries/{test_picked_up_delivery['id']}/transit")
+    assert response.status_code == 200
+    return response.json()
+
+
+
+@pytest.fixture
+def test_restaurant():
+    return client.post("/restaurants", json=VALID_RESTAURANT).json()
+
+@pytest.fixture
+def test_menu(test_restaurant):
+    return client.post("/menus", json={**VALID_MENU, "restaurant_id": test_restaurant["id"]}).json()
+
+@pytest.fixture
+def test_menu_item(test_menu):
+    return client.post("/menu-items", json={**VALID_MENU_ITEM, "menu_id": test_menu["id"]}).json()

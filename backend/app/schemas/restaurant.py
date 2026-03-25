@@ -6,8 +6,8 @@ class RestaurantCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=50)
     address: str = Field(..., min_length=5, max_length=50)
     description: str = Field(..., min_length=10, max_length=300)
-    phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$') #ensure correct phone format w/ regex
-    rating: Optional[int] = Field(..., ge=0, le=5) #rating 1-5. When first created restaurants won't have ratings
+    phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$')
+    rating: Optional[int] = Field(..., ge=0, le=5)
     tags: List[str] = Field(default=[], max_length=10)
     estimated_delivery_time: Optional[int] = Field(..., gt=0)
 

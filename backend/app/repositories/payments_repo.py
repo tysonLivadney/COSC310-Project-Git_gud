@@ -1,0 +1,18 @@
+import json, os
+from pathlib import Path
+from typing import List, Dict, Any
+
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "payments.json"
+
+def load_all() -> List[Dict[str, Any]]:
+    if not DATA_PATH.exists():
+        return []
+    with DATA_PATH.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_all(payments: List[Dict[str, Any]]) -> None:
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = DATA_PATH.with_suffix(".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(payments, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, DATA_PATH)

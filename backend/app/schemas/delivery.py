@@ -14,7 +14,7 @@ class DeliveryStatus(str,Enum):
 
 class Delivery(BaseModel):
         id: str
-        order_id: str
+        order_id: int
         pickup_address: str
         dropoff_address: str
         driver: Optional[Driver] = None
@@ -24,5 +24,3 @@ class Delivery(BaseModel):
         updated_at: datetime = Field(default_factory=datetime.now)
 
 Delivery.model_rebuild()
-
-

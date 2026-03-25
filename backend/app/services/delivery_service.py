@@ -2,13 +2,18 @@ from schemas import Delivery, DeliveryStatus, Driver
 from datetime import datetime
 from typing import Optional
 from repositories.delivery_repo import load_all,save_all
+from uuid import uuid4
+from fastapi import HTTPException
 
-_next_delivery_id = 1
+
 
 def create_delivery(order_id: int, pickup_address: str, dropoff_address: str) -> Delivery:
-    global _next_delivery_id
+    deliveries = load_all()
+    new_id = str(uuid4())
+    if any(it.get("id") == new_id for it in deliveries):
+        raise HTTPException(status_code=409, detail="ID collision; retry.")
     delivery = Delivery(
-        id= _next_delivery_id,
+        id=new_id,
         order_id = order_id,
         pickup_address=pickup_address,
         dropoff_address=dropoff_address,
@@ -16,7 +21,6 @@ def create_delivery(order_id: int, pickup_address: str, dropoff_address: str) ->
     deliveries = load_all()
     deliveries.append(delivery.model_dump(mode="json"))
     save_all(deliveries)
-    _next_delivery_id += 1
     return delivery
 
 def _update(delivery: Delivery) -> None:
@@ -27,10 +31,12 @@ def _update(delivery: Delivery) -> None:
             break
     save_all(deliveries)
     
-def get_delivery(delivery_id: int) -> Delivery:
+def get_delivery(delivery_id: str) -> Delivery:
     deliveries = load_all()
     for d in deliveries:
         if d["id"] == delivery_id:
+            if d.get("driver"):
+                d["driver"] = Driver(**d["driver"])
             return Delivery(**d)
     raise KeyError(f"Delivery {delivery_id} not found")
 
@@ -38,7 +44,7 @@ def get_all_deliveries() -> list[Delivery]:
     return [Delivery(**d) for d in load_all()]
 
 
-def delete_delivery(delivery_id: int) -> None:
+def delete_delivery(delivery_id: str) -> None:
     deliveries = load_all()
     for i, d in enumerate(deliveries):
         if d["id"] == delivery_id:
@@ -47,7 +53,7 @@ def delete_delivery(delivery_id: int) -> None:
             return
     raise KeyError(f"Delivery {delivery_id} not found")
 
-def assign_driver(delivery_id: int, driver: Driver) -> Delivery:
+def assign_driver(delivery_id: str, driver: Driver) -> Delivery:
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.ASSIGNED)
     delivery.driver = driver
@@ -56,7 +62,7 @@ def assign_driver(delivery_id: int, driver: Driver) -> Delivery:
     _update(delivery)
     return delivery
 
-def pickup_delivery(delivery_id: int) -> Delivery:
+def pickup_delivery(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.PICKED_UP)
     delivery.status = DeliveryStatus.PICKED_UP
@@ -64,7 +70,7 @@ def pickup_delivery(delivery_id: int) -> Delivery:
     _update(delivery)
     return delivery
 
-def start_transit(delivery_id: int) -> Delivery:
+def start_transit(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.IN_TRANSIT)
     delivery.status = DeliveryStatus.IN_TRANSIT
@@ -72,7 +78,7 @@ def start_transit(delivery_id: int) -> Delivery:
     _update(delivery)
     return delivery
 
-def complete_delivery(delivery_id: int) -> Delivery:
+def complete_delivery(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.DELIVERED)
     delivery.status = DeliveryStatus.DELIVERED
@@ -80,7 +86,7 @@ def complete_delivery(delivery_id: int) -> Delivery:
     _update(delivery)
     return delivery
 
-def cancel_delivery(delivery_id: int) -> Delivery:
+def cancel_delivery(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
     if delivery.status == DeliveryStatus.DELIVERED:
         raise ValueError("Cannot cancel completed delivery")
