@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 from fastapi import HTTPException
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from repositories.orders_repo import load_all, save_all
+from repositories.users_repo import load_all as load_all_users
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
@@ -33,6 +34,12 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+    delivery_address = payload.delivery_address
+    if not delivery_address:
+        users = load_all_users()
+        user = next((u for u in users if u["id"] == payload.customer_id), None)
+        if user:
+            delivery_address = user.get("address")
     new_order = Order(
         id=new_id,
         restaurant_id=payload.restaurant_id,
@@ -40,6 +47,7 @@ def create_order(payload: OrderCreate) -> Order:
         items=payload.items,
         status=OrderStatus.DRAFT,
         created_at=datetime.now(timezone.utc).isoformat(),
+        delivery_address=delivery_address,
     )
     orders.append(new_order.model_dump())
     save_all(orders)
@@ -52,19 +60,27 @@ def get_order_by_id(order_id: str) -> Order:
 
 
 def update_order(order_id: str, payload: OrderUpdate) -> Order:
-    idx, o, orders = _find_order(order_id)
-    _require_draft(o, "modified")
-    updated = Order(
-        id=order_id,
-        restaurant_id=o["restaurant_id"],
-        customer_id=o["customer_id"],
-        items=payload.items,
-        status=OrderStatus.DRAFT,
-        created_at=o["created_at"],
-    )
-    orders[idx] = updated.model_dump()
-    save_all(orders)
-    return updated
+    orders = load_all()
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+            if o.get("status") != OrderStatus.DRAFT.value:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only draft orders can be modified.",
+                )
+            updated = Order(
+                id=order_id,
+                restaurant_id=o["restaurant_id"],
+                customer_id=o["customer_id"],
+                items=payload.items,
+                status=OrderStatus.DRAFT,
+                created_at=o["created_at"],
+                delivery_address=o.get("delivery_address"),
+            )
+            orders[idx] = updated.model_dump()
+            save_all(orders)
+            return updated
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
 
 def confirm_order(order_id: str) -> Order:
