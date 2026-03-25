@@ -91,4 +91,8 @@ def test_delete_notification_invalid_notification(sample_delivery):
 
 def test_delete_notification_invalid_delivery():
     with pytest.raises(KeyError):
+<<<<<<< HEAD
         notifications_service.delete_notification(str(uuid4()), str(uuid4()))
+=======
+        notifications_service.delete_notification(str(uuid4()), str(uuid4()))
+>>>>>>> b2b69893ce7262399bb046c51b12c2f4cb55914a

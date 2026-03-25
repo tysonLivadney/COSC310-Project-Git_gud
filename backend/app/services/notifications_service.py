@@ -3,7 +3,6 @@ from schemas.delivery import Delivery
 from repositories.notifications_repo import save_all, load_all
 from uuid import uuid4
 
-
 def _load_notifications() -> dict[str, list[dict]]:
     notis = load_all()
     result: dict[str, list[dict]] = {}
