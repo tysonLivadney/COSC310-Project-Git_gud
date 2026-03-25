@@ -11,7 +11,7 @@ def valid_driver():
         phone="+123456789",
         status=DriverStatus.ONLINE
     )
-    
+@pytest.fixture(autouse=True)
 def save_and_restore():
     deliveries = load_delivery()
     save_delivery([])
