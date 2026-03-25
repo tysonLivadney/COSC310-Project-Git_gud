@@ -59,7 +59,6 @@ def create_order(payload: OrderCreate) -> Order:
         items=payload.items,
         status=OrderStatus.DRAFT,
         created_at=datetime.now(timezone.utc).isoformat(),
-        delivery_address=delivery_address,
     )
     orders.append(new_order.model_dump())
     save_all(orders)
@@ -67,8 +66,10 @@ def create_order(payload: OrderCreate) -> Order:
 
 
 def get_order_by_id(order_id: str) -> Order:
-    _, order, _ = _find_order(order_id)
-    return Order(**order)
+    for o in load_all():
+        if o.get("id") == order_id:
+            return Order(**o)
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
 
 def update_order(order_id: str, payload: OrderUpdate) -> Order:
