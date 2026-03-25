@@ -1,20 +1,33 @@
 from schemas import Delivery, DeliveryStatus, Driver
 from datetime import datetime
 from typing import Optional
-from repositories.delivery_repo import load_all,save_all
+from repositories.delivery_repo import load_all, save_all
+from repositories.orders_repo import load_all as load_all_orders
+from repositories.restaurants_repo import load_all as load_all_restaurants
 from uuid import uuid4
 from fastapi import HTTPException
 
 
 
-def create_delivery(order_id: int, pickup_address: str, dropoff_address: str) -> Delivery:
+def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff_address: Optional[str] = None) -> Delivery:
     deliveries = load_all()
     new_id = str(uuid4())
     if any(it.get("id") == new_id for it in deliveries):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+    if not pickup_address or not dropoff_address:
+        orders = load_all_orders()
+        order = next((o for o in orders if o.get("id") == order_id), None)
+        if order:
+            if not dropoff_address:
+                dropoff_address = order.get("delivery_address")
+            if not pickup_address:
+                restaurants = load_all_restaurants()
+                restaurant = next((r for r in restaurants if str(r.get("id")) == str(order.get("restaurant_id"))), None)
+                if restaurant:
+                    pickup_address = restaurant.get("address")
     delivery = Delivery(
         id=new_id,
-        order_id = order_id,
+        order_id=order_id,
         pickup_address=pickup_address,
         dropoff_address=dropoff_address,
         )

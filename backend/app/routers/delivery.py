@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
+from typing import Optional
 from schemas import Delivery, Driver
 from services import delivery_service
 
 router = APIRouter(prefix="/deliveries", tags=["deliveries"])
 @router.post("/", response_model=Delivery)
-def create_delivery(order_id: int, pickup_address: str, dropoff_address: str):
+def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff_address: Optional[str] = None):
     return delivery_service.create_delivery(order_id, pickup_address, dropoff_address)
 
 @router.get("/",response_model=list[Delivery])
