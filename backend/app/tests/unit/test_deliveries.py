@@ -1,143 +1,145 @@
-from fastapi.testclient import TestClient
-from main import app
+import pytest
+from unittest.mock import patch
+from schemas import Delivery,DeliveryStatus,Driver, DriverStatus
+from services import delivery_service
 
-client = TestClient(app)
-
-VALID_DRIVER = {
-    "id": 1,
-    "name": "John Smith",
-    "phone": "+123456789",
-    "status": "online"
-}
+VALID_DRIVER = Driver(
+    id="1",
+    name="John Smith",
+    phone="+123456789",
+    status=DriverStatus.ONLINE
+)
 
 def test_create_delivery():
-    response = client.post("/deliveries/", params={
-        "order_id": 101,
-        "pickup_address": "123 Pickup St",
-        "dropoff_address": "456 Dropoff Ave"
-    })
-    assert response.status_code == 200
-    data = response.json()
-    assert data["order_id"] == 101
-    assert data["status"] == "pending"
-    assert "id" in data
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    assert delivery.order_id == 100
+    assert delivery.pickup_address == "Pickup"
+    assert delivery.dropoff_address == "Dropoff"
+    assert delivery.status == DeliveryStatus.PENDING
+    assert delivery.id is not None
+    
 
-def test_create_delivery_missing_fields():
-    response = client.post("/deliveries/", params={"order_id": 101})
-    assert response.status_code == 422
 
+def test_get_delivery():
+    created = delivery_service.create_delivery("100","Pickup","Dropoff")
+    fetched = delivery_service.get_delivery(created.id)
+    assert fetched.id == created.id
+    assert fetched.order_id == 100
+    
+def test_get_delivery_not_found():
+    with pytest.raises(KeyError):
+        delivery_service.get_delivery("9999999")
+        
+def test_get_all_deliveries_empty():
+    assert delivery_service.get_all_deliveries() == []
 
 def test_get_all_deliveries():
-    response = client.get("/deliveries/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
-
-def test_get_all_deliveries_empty():
-    response = client.get("/deliveries/")
-    assert response.status_code == 200
-    assert response.json() == []
-
-def test_get_delivery(test_delivery):
-    response = client.get(f"/deliveries/{test_delivery['id']}")
-    assert response.status_code == 200
-    assert response.json()["id"] == test_delivery["id"]
-
-def test_get_delivery_not_found():
-    response = client.get("/deliveries/99999")
-    assert response.status_code == 404
-
-def test_get_delivery_invalid_id():
-    response = client.get("/deliveries/not-an-int")
-    assert response.status_code == 422
+    d1 = delivery_service.create_delivery("101","Pickup1","Dropoff1")
+    d2 = delivery_service.create_delivery("102","Pickup2","Dropoff2")
+    assert len(delivery_service.get_all_deliveries()) == 2
 
 
 
-
-
-def test_delete_delivery(test_delivery):
-    response = client.delete(f"/deliveries/{test_delivery['id']}")
-    assert response.status_code == 200
-    assert client.get(f"/deliveries/{test_delivery['id']}").status_code == 404
-
+def test_delete_delivery():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.delete_delivery(delivery.id)
+    with pytest.raises(KeyError):
+        delivery_service.get_delivery(delivery.id)
+        
 def test_delete_delivery_not_found():
-    response = client.delete("/deliveries/99999")
-    assert response.status_code == 404
+    with pytest.raises(KeyError):
+        delivery_service.delete_delivery("9999999")
+        
 
 
-
-
-
-def test_assign_driver(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", json=VALID_DRIVER)
-    assert response.status_code == 200
-    assert response.json()["status"] == "assigned"
-    assert response.json()["driver"]["id"] == VALID_DRIVER["id"]
-
+def test_assign_driver():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    updated = delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    assert updated.status == DeliveryStatus.ASSIGNED
+    assert updated.driver.id == VALID_DRIVER.id
+    
 def test_assign_driver_not_found():
-    response = client.patch("/deliveries/99999/assign", json=VALID_DRIVER)
-    assert response.status_code == 404
+    with pytest.raises(KeyError):
+        delivery_service.assign_driver("9999999", VALID_DRIVER)
+        
+def test_assign_driver_invalid_transition():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.cancel_delivery(delivery.id)
+    with pytest.raises(ValueError):
+        delivery_service.assign_driver(delivery.id, VALID_DRIVER)
 
 
 
-
-def test_pickup_delivery(test_assigned_delivery):
-    response = client.patch(f"/deliveries/{test_assigned_delivery['id']}/pickup")
-    assert response.status_code == 200
-    assert response.json()["status"] == "picked_up"
-
-def test_pickup_delivery_invalid_transition(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/pickup")
-    assert response.status_code == 400
+def test_pickup_delivery():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    updated = delivery_service.pickup_delivery(delivery.id)
+    assert updated.status == DeliveryStatus.PICKED_UP
 
 def test_pickup_delivery_not_found():
-    response = client.patch("/deliveries/99999/pickup")
-    assert response.status_code == 404
+    with pytest.raises(KeyError):
+        delivery_service.pickup_delivery("99999")
+        
+def test_pickup_delivery_invalid_transition():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    with pytest.raises(ValueError):
+        delivery_service.pickup_delivery(delivery.id)
+        
 
 
-
-
-def test_start_transit(test_picked_up_delivery):
-    response = client.patch(f"/deliveries/{test_picked_up_delivery['id']}/transit")
-    assert response.status_code == 200
-    assert response.json()["status"] == "in_transit"
-
-def test_start_transit_invalid_transition(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/transit")
-    assert response.status_code == 400
+def test_start_transit():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    delivery_service.pickup_delivery(delivery.id)
+    updated = delivery_service.start_transit(delivery.id)
+    assert updated.status == DeliveryStatus.IN_TRANSIT
 
 def test_start_transit_not_found():
-    response = client.patch("/deliveries/99999/transit")
-    assert response.status_code == 404
+    with pytest.raises(KeyError):
+        delivery_service.start_transit("99999")
+        
+def test_start_transit_invalid_transition():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    with pytest.raises(ValueError):
+        delivery_service.start_transit(delivery.id)
 
 
 
-
-def test_complete_delivery(test_in_transit_delivery):
-    response = client.patch(f"/deliveries/{test_in_transit_delivery['id']}/complete")
-    assert response.status_code == 200
-    assert response.json()["status"] == "delivered"
-
-def test_complete_delivery_invalid_transition(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/complete")
-    assert response.status_code == 400
+def test_complete_delivery():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    delivery_service.pickup_delivery(delivery.id)
+    delivery_service.start_transit(delivery.id)
+    updated = delivery_service.complete_delivery(delivery.id)
+    assert updated.status == DeliveryStatus.DELIVERED
 
 def test_complete_delivery_not_found():
-    response = client.patch("/deliveries/99999/complete")
-    assert response.status_code == 404
-
-
-
-
-def test_cancel_delivery(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/cancel")
-    assert response.status_code == 200
-    assert response.json()["status"] == "cancelled"
-
-def test_cancel_completed_delivery(test_in_transit_delivery):
-    client.patch(f"/deliveries/{test_in_transit_delivery['id']}/complete")
-    response = client.patch(f"/deliveries/{test_in_transit_delivery['id']}/cancel")
-    assert response.status_code == 400
-
+    with pytest.raises(KeyError):
+        delivery_service.complete_delivery("99999")
+        
+def test_complete_delivery_invalid_transition():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    with pytest.raises(ValueError):
+        delivery_service.complete_delivery(delivery.id)
+        
+        
+        
+def test_cancel_delivery():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    updated = delivery_service.cancel_delivery(delivery.id)
+    assert updated.status == DeliveryStatus.CANCELLED
+    
+def test_cancel_completed_delivery():
+    delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
+    delivery_service.assign_driver(delivery.id, VALID_DRIVER)
+    delivery_service.pickup_delivery(delivery.id)
+    delivery_service.start_transit(delivery.id)
+    delivery_service.complete_delivery(delivery.id)
+    with pytest.raises(ValueError):
+        delivery_service.cancel_delivery(delivery.id)
+        
 def test_cancel_delivery_not_found():
-    response = client.patch("/deliveries/99999/cancel")
-    assert response.status_code == 404
+    with pytest.raises(KeyError):
+        delivery_service.cancel_delivery("999999")
+        
+        
