@@ -18,7 +18,7 @@ VALID_MENU = {
     "description": "Test menu description that is long enough.",
 }
 
-#POST tests
+
 def test_post_valid_restaurant():
     response = client.post("/restaurants", json=VALID_RESTAURANT)
     assert response.status_code == 201
@@ -52,7 +52,6 @@ def test_too_many_tags():
     response = client.post("/restaurants", json=invalid_restaurant)
     assert response.status_code == 422
 
-#GET tests
 def test_get_restaurants(): 
     client.post("/restaurants", json=VALID_RESTAURANT)
     client.post("/restaurants", json=VALID_RESTAURANT)

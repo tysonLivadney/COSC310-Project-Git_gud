@@ -1,0 +1,10 @@
+[
+  {
+    "user_id": "driver-1",
+    "name": "John Smith",
+    "phone": "+123456789",
+    "vehicle_type": "Sedan",
+    "license_plate": "ABC123",
+    "available": true
+  }
+]
