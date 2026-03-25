@@ -73,7 +73,8 @@ def test_assign_registered_driver():
     response = client.patch(f"/deliveries/{delivery['id']}/assign", params={"driver_id": driver_id})
     assert response.status_code == 200
     assert response.json()["status"] == "assigned"
-    assert response.json()["driver"]["name"] == "Test Driver"
+    assert response.json()["driver"]["id"] == driver_id
+    assert response.json()["driver"]["status"] == "busy"
 
 
 def test_assign_nonexistent_driver():
@@ -94,6 +95,7 @@ def test_assign_driver_sets_driver_info():
     response = client.patch(f"/deliveries/{delivery['id']}/assign", params={"driver_id": driver_id})
     driver = response.json()["driver"]
     assert driver["phone"] == "+1234567890"
+    assert driver["status"] == "busy"
 
 
 def test_cannot_assign_to_already_assigned():

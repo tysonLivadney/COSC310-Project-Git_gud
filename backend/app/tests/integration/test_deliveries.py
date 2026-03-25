@@ -85,7 +85,8 @@ def test_assign_driver(test_delivery):
     response = client.patch(f"/deliveries/{test_delivery['id']}/assign", params={"driver_id": driver_id})
     assert response.status_code == 200
     assert response.json()["status"] == "assigned"
-    assert response.json()["driver"]["name"] == "John Smith"
+    assert response.json()["driver"]["id"] == driver_id
+    assert response.json()["driver"]["status"] == "busy"
 
 def test_assign_driver_not_found():
     response = client.patch("/deliveries/99999/assign", params={"driver_id": "fake-id"})

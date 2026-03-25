@@ -68,6 +68,7 @@ def assign_driver(delivery_id: str, driver_id: str) -> Delivery:
         id=driver_data["user_id"],
         name=driver_data["name"],
         phone=driver_data["phone"],
+        status="busy",
     )
 
     delivery = get_delivery(delivery_id)

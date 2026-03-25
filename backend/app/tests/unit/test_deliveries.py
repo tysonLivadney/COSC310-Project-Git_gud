@@ -64,7 +64,8 @@ def test_assign_driver():
     delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
     updated = delivery_service.assign_driver(delivery.id, "driver-1")
     assert updated.status == DeliveryStatus.ASSIGNED
-    assert updated.driver.name == "John Smith"
+    assert updated.driver.id == "driver-1"
+    assert updated.driver.status == DriverStatus.BUSY
 
 def test_assign_driver_not_found():
     _seed_driver()
