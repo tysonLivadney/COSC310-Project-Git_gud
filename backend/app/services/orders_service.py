@@ -28,7 +28,7 @@ def create_order(payload: OrderCreate) -> Order:
         status=OrderStatus.DRAFT,
         created_at=datetime.now(timezone.utc).isoformat(),
     )
-    orders.append(new_order.dict())
+    orders.append(new_order.model_dump())
     save_all(orders)
     return new_order
 
@@ -57,7 +57,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
                 status=OrderStatus.DRAFT,
                 created_at=o["created_at"],
             )
-            orders[idx] = updated.dict()
+            orders[idx] = updated.model_dump()
             save_all(orders)
             return updated
     raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
