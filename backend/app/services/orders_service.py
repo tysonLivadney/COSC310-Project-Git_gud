@@ -91,6 +91,7 @@ def confirm_order(order_id: str) -> Order:
         restaurant_id=o["restaurant_id"],
         customer_id=o["customer_id"],
         items=[item for item in o["items"]],
+        delivery_address=o.get("delivery_address"),
         status=OrderStatus.CONFIRMED,
         created_at=o["created_at"],
         confirmed_at=datetime.now(timezone.utc).isoformat(),
@@ -108,6 +109,7 @@ def cancel_order(order_id: str) -> None:
         restaurant_id=o["restaurant_id"],
         customer_id=o["customer_id"],
         items=[item for item in o["items"]],
+        delivery_address=o.get("delivery_address"),
         status=OrderStatus.CANCELLED,
         created_at=o["created_at"],
     )
