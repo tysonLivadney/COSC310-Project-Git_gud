@@ -16,8 +16,8 @@ def create_menu_item(payload: MenuItemCreate) -> MenuItem:
     if not any(r["id"] == payload.menu_id for r in load_menus()):
         raise HTTPException(status_code=404, detail=f"Menu '{payload.menu_id}' not found")
     new_menu_item = MenuItem(
-        id=new_id, 
-        name=payload.name.strip(), 
+        id=new_id,
+        name=payload.name.strip(),
         description=payload.description.strip(),
         price=payload.price,
         in_stock=payload.in_stock,
@@ -102,5 +102,3 @@ def delete_menu_items_by_menu_id(menu_id: str) -> None:
     menu_items = load_all()
     new_menu_items = [m for m in menu_items if m.get("menu_id") != menu_id]
     save_all(new_menu_items)
-
-

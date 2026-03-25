@@ -17,8 +17,8 @@ def create_menu(payload: MenuCreate) -> Menu:
     if not any(r["id"] == payload.restaurant_id for r in load_restaurants()):
         raise HTTPException(status_code=404, detail=f"Restaurant '{payload.restaurant_id}' not found")
     new_menu = Menu(
-        id=new_id, 
-        name=payload.name.strip(), 
+        id=new_id,
+        name=payload.name.strip(),
         description=payload.description.strip(),
         restaurant_id=payload.restaurant_id.strip()
     )
@@ -67,5 +67,3 @@ def delete_menu_items_by_restaurant_id(restaurant_id: str) -> None:
         delete_menu_items_by_menu_id(m)
     new_menus = [m for m in menus if m.get("restaurant_id") != restaurant_id]
     save_all(new_menus)
-
-

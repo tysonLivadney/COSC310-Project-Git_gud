@@ -19,7 +19,7 @@ def _build_item(item_id: str, payload: ItemCreate | ItemUpdate) -> Item:
 def create_item(payload: ItemCreate) -> Item:
     items = load_all()
     new_id = str(uuid.uuid4())
-    if any(it.get("id") == new_id for it in items):  # extremely unlikely, but consistent check
+    if any(it.get("id") == new_id for it in items): 
         raise HTTPException(status_code=409, detail="ID collision; retry.")
     new_item = _build_item(new_id, payload)
     items.append(new_item.dict())
