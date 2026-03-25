@@ -1,6 +1,5 @@
 from uuid import uuid4
 import pytest
-from pathlib import Path
 from main import app
 from schemas.delivery import Delivery, DeliveryStatus
 from schemas.notifications import NotificationType
@@ -12,6 +11,10 @@ from repositories.restaurants_repo import save_all as save_restaurants, load_all
 from repositories.locations_repo import save_all as save_locations, load_all as load_locations
 from repositories.payments_repo import save_all as save_payments, load_all as load_payments
 from fastapi.testclient import TestClient
+=======
+from pathlib import Path
+
+
 
 client = TestClient(app)
 
@@ -20,7 +23,9 @@ VALID_RESTAURANT = {
     "address": " 123 Address ",
     "description": "Example of a description.",
     "phone": "+123456789",
-    "tags": ["tag1", "tag2"]
+    "rating": 5,
+    "tags": ["tag1", "tag2"],
+    "estimated_delivery_time": 10
 }
 
 VALID_MENU = {
@@ -60,22 +65,15 @@ def save_and_restore():
     restaurants = load_restaurants()
     menus = load_menus()
     menu_items = load_menu_items()
-    locations = load_locations()
     payments = load_payments()
-    save_restaurants([])
-    save_menus([])
     save_menu_items([])
-    save_locations({
-        "users": {},
-        "drivers": {},
-        "restaurants": {}
-    })
+    save_menus([])
+    save_restaurants([])
     save_payments([])
     yield
     save_restaurants(restaurants)
     save_menus(menus)
     save_menu_items(menu_items)
-    save_locations(locations)
     save_payments(payments)
 
 @pytest.fixture
@@ -84,11 +82,12 @@ def test_restaurant():
 
 @pytest.fixture
 def test_menu(test_restaurant):
-    return client.post("/menus", json={**VALID_MENU, "restaurant_id": test_restaurant["id"]}).json()
+    return client.post("/menus", json={**VALID_MENU,"restaurant_id": test_restaurant["id"]}).json()
 
 @pytest.fixture
 def test_menu_item(test_menu):
-    return client.post("/menu-items", json={**VALID_MENU_ITEM, "menu_id": test_menu["id"]}).json()
+    return client.post("/menu-items", json={**VALID_MENU_ITEM,"menu_id": test_menu["id"]}).json()
+
 
 DATA_FILE_DELIVERIES = Path("data/deliveries.json")
 
@@ -157,16 +156,3 @@ def test_in_transit_delivery(test_picked_up_delivery):
     assert response.status_code == 200
     return response.json()
 
-
-
-@pytest.fixture
-def test_restaurant():
-    return client.post("/restaurants", json=VALID_RESTAURANT).json()
-
-@pytest.fixture
-def test_menu(test_restaurant):
-    return client.post("/menus", json={**VALID_MENU, "restaurant_id": test_restaurant["id"]}).json()
-
-@pytest.fixture
-def test_menu_item(test_menu):
-    return client.post("/menu-items", json={**VALID_MENU_ITEM, "menu_id": test_menu["id"]}).json()

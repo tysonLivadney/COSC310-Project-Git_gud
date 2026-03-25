@@ -15,6 +15,7 @@ def load_all() -> Dict[str, Any]:
         return json.load(f)
 
 def save_all(locations: Dict[str, Any]) -> None:
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = DATA_PATH.with_suffix(".tmp")
     with tmp.open("w", encoding="utf-8") as f:
         json.dump(locations, f, ensure_ascii=False, indent=2)
