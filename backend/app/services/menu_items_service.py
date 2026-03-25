@@ -16,8 +16,8 @@ def create_menu_item(payload: MenuItemCreate) -> MenuItem:
     if not any(r["id"] == payload.menu_id for r in load_menus()):
         raise HTTPException(status_code=404, detail=f"Menu '{payload.menu_id}' not found")
     new_menu_item = MenuItem(
-        id=new_id, 
-        name=payload.name.strip(), 
+        id=new_id,
+        name=payload.name.strip(),
         description=payload.description.strip(),
         price=payload.price,
         in_stock=payload.in_stock,
@@ -71,20 +71,17 @@ def update_menu_item(menu_item_id: str, payload: MenuItemUpdate) -> MenuItem:
     for idx, m in enumerate(menu_items):
         if m.get("id") == menu_item_id:
             updated_name = cast(str, payload.name.strip() if payload.name is not None else str(m.get("name")))
-            updated_description = cast(
-                str,
-                payload.description.strip() if payload.description is not None else str(m.get("description")),
-            )
+            updated_description = cast(str, payload.description.strip() if payload.description is not None else str(m.get("description")))
             updated_price = cast(float, float(payload.price) if payload.price is not None else float(m["price"]))
             updated_in_stock = cast(bool, payload.in_stock if payload.in_stock is not None else bool(m.get("in_stock")))
-            updated_menu_id = cast(str, str(m["menu_id"]))
+            updated_menu_id = cast(str, str(m.get("menu_id")))
             updated = MenuItem(
-                id = menu_item_id,
+                id=menu_item_id,
                 name=updated_name,
                 description=updated_description,
                 price=updated_price,
                 in_stock=updated_in_stock,
-                menu_id=updated_menu_id,
+                menu_id=updated_menu_id
             )
             menu_items[idx] = updated.model_dump()
             save_all(menu_items)
@@ -102,5 +99,3 @@ def delete_menu_items_by_menu_id(menu_id: str) -> None:
     menu_items = load_all()
     new_menu_items = [m for m in menu_items if m.get("menu_id") != menu_id]
     save_all(new_menu_items)
-
-
