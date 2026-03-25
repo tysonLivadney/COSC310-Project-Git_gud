@@ -171,7 +171,7 @@ def test_pagination():
     for i in range(1, 11):
         client.post("/restaurants", json={**VALID_RESTAURANT, "name": f"restaurant{i}"})
     
-    response = client.get("/restaurants/search?limit=5&offset=5") #return 5-10
+    response = client.get("/restaurants/search?limit=5&offset=5")
     assert response.status_code == 200
     assert len(response.json()) == 5
     assert response.json()[0]["name"] == "restaurant6"
@@ -185,4 +185,4 @@ def test_filtered_pagination():
 
     response = client.get("/restaurants/search?name=restaurant&limit=2&offset=9")
     assert response.status_code == 200
-    assert len(response.json()) == 2 #inclusive of offset
+    assert len(response.json()) == 2

@@ -1,0 +1,23 @@
+{
+  "users": {
+    "1": {
+      "latitude": 49.2827,
+      "longitude": -123.1207,
+      "address": "User"
+    }
+  },
+  "drivers": {
+    "1": {
+      "latitude": 49.25,
+      "longitude": -123.1,
+      "address": "Burnaby"
+    }
+  },
+  "restaurants": {
+    "100": {
+      "latitude": 49.263,
+      "longitude": -123.138,
+      "address": "Restaurant"
+    }
+  }
+}
