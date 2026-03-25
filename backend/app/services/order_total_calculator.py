@@ -5,6 +5,9 @@ from services.delivery_fee_calculator import calculate_delivery_fee
 
 two_places = Decimal('0.01')
 
+def subtotal_from_order(order):
+    return OrderTotalService.subtotal_from_order(order)
+
 def calculate_order_total(order, province, distance_km):
     return OrderTotalService.calculate_order_total(order, province, distance_km)
 

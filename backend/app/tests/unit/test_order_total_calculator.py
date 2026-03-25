@@ -6,7 +6,7 @@ from datetime import datetime
 def make_order():
     return Order(
         id="order-1",
-        restaurant_id=1,
+        restaurant_id="1",
         customer_id="cust-1",
         items=[
             OrderItem(food_item="Burger", quantity=2, unit_price=9.99),
