@@ -1,4 +1,5 @@
 from schemas import Delivery, DeliveryStatus, Driver
+from schemas.notifications import NotificationType
 from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ from repositories.delivery_repo import load_all, save_all
 from repositories.drivers_repo import load_all as load_all_drivers
 from repositories.orders_repo import load_all as load_all_orders
 from repositories.restaurants_repo import load_all as load_all_restaurants
+from services import notifications_service
 from uuid import uuid4
 
 
@@ -35,6 +37,7 @@ def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff
     deliveries = load_all()
     deliveries.append(delivery.model_dump(mode="json"))
     save_all(deliveries)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_CREATED)
     return delivery
 
 def _update(delivery: Delivery) -> None:
@@ -94,6 +97,7 @@ def assign_driver(delivery_id: str, driver_id: str) -> Delivery:
     delivery.status = DeliveryStatus.ASSIGNED
     delivery.updated_at = datetime.now()
     _update(delivery)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_ASSIGNED)
     return delivery
 
 def pickup_delivery(delivery_id: str, current_user_id: str) -> Delivery:
@@ -103,6 +107,7 @@ def pickup_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery.status = DeliveryStatus.PICKED_UP
     delivery.updated_at = datetime.now()
     _update(delivery)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_PICKED_UP)
     return delivery
 
 def start_transit(delivery_id: str, current_user_id: str) -> Delivery:
@@ -112,6 +117,7 @@ def start_transit(delivery_id: str, current_user_id: str) -> Delivery:
     delivery.status = DeliveryStatus.IN_TRANSIT
     delivery.updated_at = datetime.now()
     _update(delivery)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_IN_TRANSIT)
     return delivery
 
 def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
@@ -121,15 +127,16 @@ def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery.status = DeliveryStatus.DELIVERED
     delivery.updated_at = datetime.now()
     _update(delivery)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_COMPLETED)
     return delivery
 
 def cancel_delivery(delivery_id: str) -> Delivery:
     delivery = get_delivery(delivery_id)
-    if delivery.status == DeliveryStatus.DELIVERED:
-        raise ValueError("Cannot cancel completed delivery")
+    _validate_transition(delivery.status, DeliveryStatus.CANCELLED)
     delivery.status = DeliveryStatus.CANCELLED
     delivery.updated_at = datetime.now()
     _update(delivery)
+    notifications_service.notify(delivery, NotificationType.DELIVERY_CANCELLED)
     return delivery
 
 _valid_transitions = {
