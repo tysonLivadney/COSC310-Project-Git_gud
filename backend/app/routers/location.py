@@ -24,7 +24,7 @@ def update_user_location(request: UpdateUserLocationRequest):
     }
 
 @router.get("/users/{user_id}")
-def get_user_location(user_id: int):
+def get_user_location(user_id: str):
     location = location_service.get_user_location(user_id)
     if location is None:
         raise HTTPException(status_code=404, detail="User location not found")
@@ -44,7 +44,7 @@ def update_driver_location(request: UpdateDriverLocationRequest):
     }
 
 @router.get("/drivers/{driver_id}")
-def get_driver_location(driver_id: int):
+def get_driver_location(driver_id: str):
     location = location_service.get_driver_location(driver_id)
     if location is None:
         raise HTTPException(status_code=404, detail="Driver location not found")
@@ -64,7 +64,7 @@ def update_restaurant_location(request: UpdateRestaurantLocationRequest):
     }
 
 @router.get("/restaurants/{restaurant_id}")
-def get_restaurant_location(restaurant_id: int):
+def get_restaurant_location(restaurant_id: str):
     location = location_service.get_restaurant_location(restaurant_id)
     if location is None:
         raise HTTPException(status_code=404, detail="Restaurant location not found")

@@ -5,7 +5,7 @@ client = TestClient(app)
 
 def test_post_user_location():
     response = client.post("/location/users", json={
-        "user_id": 1,
+        "user_id": "1",
         "latitude": 49.2827,
         "longitude": -123.1207,
         "address": "Vancouver"
@@ -16,7 +16,7 @@ def test_post_user_location():
 
 def test_get_user_location():
     client.post("/location/users", json={
-        "user_id": 1,
+        "user_id": "1",
         "latitude": 49.2827,
         "longitude": -123.1207,
         "address": "Vancouver"
@@ -30,7 +30,7 @@ def test_get_user_location():
 
 def test_post_driver_location():
     response = client.post("/location/drivers", json={
-        "driver_id": 1,
+        "driver_id": "1",
         "latitude": 49.25,
         "longitude": -123.10,
         "address": "Burnaby"
@@ -45,7 +45,7 @@ def test_get_driver_location_not_found():
 
 def test_post_restaurant_location():
     response = client.post("/location/restaurants", json={
-        "restaurant_id": 100,
+        "restaurant_id": "100",
         "latitude": 49.263,
         "longitude": -123.138,
         "address": "Restaurant Area"
@@ -56,7 +56,7 @@ def test_post_restaurant_location():
 
 def test_get_restaurant_location():
     client.post("/location/restaurants", json={
-        "restaurant_id": 100,
+        "restaurant_id": "100",
         "latitude": 49.263,
         "longitude": -123.138,
         "address": "Restaurant Area"
@@ -88,13 +88,13 @@ def test_post_distance():
 
 def test_get_user_to_restaurant_distance():
     client.post("/location/users", json={
-        "user_id": 1,
+        "user_id": "1",
         "latitude": 49.2827,
         "longitude": -123.1207,
         "address": "User"
     })
     client.post("/location/restaurants", json={
-        "restaurant_id": 100,
+        "restaurant_id": "100",
         "latitude": 49.263,
         "longitude": -123.138,
         "address": "Restaurant"
@@ -107,7 +107,7 @@ def test_get_user_to_restaurant_distance():
 
 def test_post_user_location_invalid_body():
     response = client.post("/location/users", json={
-        "user_id": 1,
+        "user_id": "1",
         "latitude": 49.2827
     })
     assert response.status_code == 422

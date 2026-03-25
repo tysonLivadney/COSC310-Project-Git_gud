@@ -1,10 +1,17 @@
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import List, Optional, Tuple
+
 from fastapi import HTTPException
+
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
+from schemas.payment import PaymentInfo, PaymentProcessRequest
 from repositories.orders_repo import load_all, save_all
 from repositories.users_repo import load_all as load_all_users
+from services.location_service import LocationService
+from services.order_total_calculator import OrderTotalService
+from services.payment_service import PaymentService
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
@@ -18,6 +25,9 @@ def _find_order(order_id: str) -> Tuple[int, dict, list]:
 def _require_draft(order: dict, action: str) -> None:
     if order.get("status") != OrderStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail=f"Only draft orders can be {action}.")
+
+
+location_service = LocationService()
 
 
 def list_orders(customer_id: Optional[str] = None, status: Optional[OrderStatus] = None) -> List[Order]:
@@ -34,12 +44,14 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+
     delivery_address = payload.delivery_address
     if not delivery_address:
         users = load_all_users()
         user = next((u for u in users if u["id"] == payload.customer_id), None)
         if user:
             delivery_address = user.get("address")
+
     new_order = Order(
         id=new_id,
         restaurant_id=payload.restaurant_id,
@@ -55,55 +67,89 @@ def create_order(payload: OrderCreate) -> Order:
 
 
 def get_order_by_id(order_id: str) -> Order:
-    _, order, _ = _find_order(order_id)
-    return Order(**order)
-
-
-def update_order(order_id: str, payload: OrderUpdate) -> Order:
-    orders = load_all()
-    for idx, o in enumerate(orders):
+    for o in load_all():
         if o.get("id") == order_id:
-            if o.get("status") != OrderStatus.DRAFT.value:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Only draft orders can be modified.",
-                )
-            updated = Order(
-                id=order_id,
-                restaurant_id=o["restaurant_id"],
-                customer_id=o["customer_id"],
-                items=payload.items,
-                status=OrderStatus.DRAFT,
-                created_at=o["created_at"],
-                delivery_address=o.get("delivery_address"),
-            )
-            orders[idx] = updated.model_dump()
-            save_all(orders)
-            return updated
+            return Order(**o)
     raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
 
-def confirm_order(order_id: str) -> Order:
+def update_order(order_id: str, payload: OrderUpdate) -> Order:
     idx, o, orders = _find_order(order_id)
-    _require_draft(o, "confirmed")
-    confirmed = Order(
+    _require_draft(o, "modified")
+
+    updated = Order(
         id=order_id,
         restaurant_id=o["restaurant_id"],
         customer_id=o["customer_id"],
-        items=[item for item in o["items"]],
-        delivery_address=o.get("delivery_address"),
-        status=OrderStatus.CONFIRMED,
+        items=payload.items,
+        status=OrderStatus.DRAFT,
         created_at=o["created_at"],
-        confirmed_at=datetime.now(timezone.utc).isoformat(),
+        delivery_address=o.get("delivery_address"),
     )
-    orders[idx] = confirmed.model_dump()
+    orders[idx] = updated.model_dump()
     save_all(orders)
-    return confirmed
+    return updated
+
+
+def confirm_order(order_id: str, payment_info: PaymentInfo):
+    idx, o, orders = _find_order(order_id)
+    _require_draft(o, "confirmed")
+
+    order = Order(**o)
+
+    customer_location = location_service.get_user_location(order.customer_id)
+    restaurant_location = location_service.get_restaurant_location(order.restaurant_id)
+
+    if customer_location is None or restaurant_location is None:
+        distance_km = Decimal("1.0")
+    else:
+        distance_km = Decimal(
+            str(location_service.calculate_distance_between(customer_location, restaurant_location))
+        )
+
+    province = "BC"
+    subtotal, tax_rate, tax, delivery_fee, total = OrderTotalService.calculate_order_total(
+        order,
+        province,
+        distance_km,
+    )
+
+    payment_request = PaymentProcessRequest(
+        order_id=order_id,
+        total=total,
+        payment_info=payment_info,
+    )
+    payment_result = PaymentService.process_payment(payment_request)
+
+    o["status"] = OrderStatus.CONFIRMED.value
+    o["confirmed_at"] = datetime.now(timezone.utc).isoformat()
+    o["subtotal"] = str(subtotal)
+    o["tax"] = str(tax)
+    o["delivery_fee"] = str(delivery_fee)
+    o["total"] = str(total)
+
+    orders[idx] = o
+    save_all(orders)
+
+    return {
+        "order_id": o["id"],
+        "status": o["status"],
+        "confirmed_at": o["confirmed_at"],
+        "payment": payment_result,
+        "distance_km": float(distance_km),
+        "subtotal": str(subtotal),
+        "tax_rate": str(tax_rate),
+        "tax": str(tax),
+        "delivery_fee": str(delivery_fee),
+        "total": str(total),
+        "province": province,
+    }
 
 
 def cancel_order(order_id: str) -> None:
     idx, o, orders = _find_order(order_id)
     _require_draft(o, "cancelled")
+
     cancelled = Order(
         id=order_id,
         restaurant_id=o["restaurant_id"],

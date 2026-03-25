@@ -13,7 +13,7 @@ class LocationService:
         save_all(data)
         return data["users"][str(user_id)]
     
-    def get_user_location(self, user_id: int):
+    def get_user_location(self, user_id: str):
         data = load_all()
         user_data = data["users"].get(str(user_id))
         if user_data is None:
@@ -26,7 +26,7 @@ class LocationService:
         save_all(data)
         return data["restaurants"][str(restaurant_id)]
     
-    def get_restaurant_location(self, restaurant_id: int):
+    def get_restaurant_location(self, restaurant_id: str):
         data = load_all()
         restaurant_data = data["restaurants"].get(str(restaurant_id))
         if restaurant_data is None:

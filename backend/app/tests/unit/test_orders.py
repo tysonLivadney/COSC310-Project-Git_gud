@@ -5,14 +5,22 @@ from main import app
 
 client = TestClient(app)
 
+TEST_PAYLOAD = {
+    "payment_info": {
+        "card_number": "4242424242424242",
+        "expiry": "12/26",
+        "cvv": "805"
+    }
+}
+
 SAMPLE_ORDER = {
-    "restaurant_id": 1,
+    "restaurant_id": "1",
     "customer_id": "customer-1",
     "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
 }
 
 SAMPLE_ORDER_2 = {
-    "restaurant_id": 2,
+    "restaurant_id": "2",
     "customer_id": "customer-2",
     "items": [{"food_item": "Pizza", "quantity": 1, "unit_price": 15.00}],
 }
@@ -31,7 +39,7 @@ def test_create_order():
     response = client.post("/orders", json=SAMPLE_ORDER)
     assert response.status_code == 201
     data = response.json()
-    assert data["restaurant_id"] == 1
+    assert data["restaurant_id"] == "1"
     assert data["customer_id"] == "customer-1"
     assert data["status"] == "draft"
     assert len(data["items"]) == 1
@@ -47,7 +55,7 @@ def test_create_order_has_id():
 
 def test_create_order_missing_items():
     response = client.post("/orders", json={
-        "restaurant_id": 1,
+        "restaurant_id": "1",
         "customer_id": "customer-1",
         "items": [],
     })
@@ -55,7 +63,7 @@ def test_create_order_missing_items():
 
 
 def test_create_order_missing_fields():
-    response = client.post("/orders", json={"restaurant_id": 1})
+    response = client.post("/orders", json={"restaurant_id": "1"})
     assert response.status_code == 422
 
 
@@ -86,7 +94,7 @@ def test_filter_orders_by_customer():
 
 def test_filter_orders_by_status():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     client.post("/orders", json=SAMPLE_ORDER_2)
 
     response = client.get("/orders", params={"status": "confirmed"})
@@ -115,7 +123,7 @@ def test_update_order_items():
     response = client.put(f"/orders/{order['id']}", json={"items": new_items})
     assert response.status_code == 200
     assert response.json()["items"][0]["food_item"] == "Fries"
-    assert response.json()["restaurant_id"] == 1
+    assert response.json()["restaurant_id"] == "1"
 
 
 def test_update_keeps_original_customer():
@@ -128,7 +136,7 @@ def test_update_keeps_original_customer():
 
 def test_update_confirmed_order_fails():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     new_items = [{"food_item": "Fries", "quantity": 1, "unit_price": 5.00}]
     response = client.put(f"/orders/{order['id']}", json={"items": new_items})
     assert response.status_code == 400
@@ -144,7 +152,7 @@ def test_update_nonexistent_order():
 #POST /orders/{id}/confirm tests
 def test_confirm_order():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    response = client.post(f"/orders/{order['id']}/confirm")
+    response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 200
     assert response.json()["status"] == "confirmed"
     assert response.json()["confirmed_at"] is not None
@@ -152,13 +160,13 @@ def test_confirm_order():
 
 def test_confirm_already_confirmed():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
-    response = client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 400
 
 
 def test_confirm_nonexistent_order():
-    response = client.post("/orders/fake-id/confirm")
+    response = client.post("/orders/fake-id/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 404
 
 
@@ -179,7 +187,7 @@ def test_cancelled_order_status():
 
 def test_cancel_confirmed_order_fails():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
-    client.post(f"/orders/{order['id']}/confirm")
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     response = client.delete(f"/orders/{order['id']}")
     assert response.status_code == 400
 
@@ -200,5 +208,5 @@ def test_cannot_update_cancelled_order():
 def test_cannot_confirm_cancelled_order():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
     client.delete(f"/orders/{order['id']}")
-    response = client.post(f"/orders/{order['id']}/confirm")
+    response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 400
