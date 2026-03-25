@@ -7,9 +7,9 @@ from pathlib import Path
 from repositories.restaurants_repo import save_all as save_restaurants, load_all as load_restaurants
 from repositories.menus_repo import save_all as save_menus, load_all as load_menus
 from repositories.menu_items_repo import save_all as save_menu_items, load_all as load_menu_items
-from schemas.delivery import Delivery
-from schemas.notifications import NotificationType
-from services import notifications_service
+from main import app
+from fastapi.testclient import TestClient
+
 client = TestClient(app)
 
 

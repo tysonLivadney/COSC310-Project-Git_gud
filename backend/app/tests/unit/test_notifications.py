@@ -4,6 +4,9 @@ from schemas.delivery import Delivery, DeliveryStatus
 from schemas.notifications import Notification, NotificationType
 from services import notifications_service
 
+    
+
+
 def test_notify_returns_notification(sample_delivery):
     result = notifications_service.notify(sample_delivery, NotificationType.DELIVERY_CREATED)
     assert result.delivery_id == sample_delivery.id
@@ -91,8 +94,4 @@ def test_delete_notification_invalid_notification(sample_delivery):
 
 def test_delete_notification_invalid_delivery():
     with pytest.raises(KeyError):
-<<<<<<< HEAD
         notifications_service.delete_notification(str(uuid4()), str(uuid4()))
-=======
-        notifications_service.delete_notification(str(uuid4()), str(uuid4()))
->>>>>>> b2b69893ce7262399bb046c51b12c2f4cb55914a
