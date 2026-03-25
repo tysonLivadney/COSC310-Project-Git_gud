@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_validator
 from typing import Literal, Optional
 
 
-Role = Literal["user", "owner", "manager"]
+Role = Literal["user", "owner", "manager", "driver"]
 
 
 class RegisterRequest(BaseModel):

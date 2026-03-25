@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
 from repositories.delivery_repo import load_all, save_all
+from repositories.drivers_repo import load_all as load_all_drivers
 from repositories.orders_repo import load_all as load_all_orders
 from repositories.restaurants_repo import load_all as load_all_restaurants
 from uuid import uuid4
@@ -43,7 +44,7 @@ def _update(delivery: Delivery) -> None:
             deliveries[i] = delivery.model_dump(mode="json")
             break
     save_all(deliveries)
-    
+
 def get_delivery(delivery_id: str) -> Delivery:
     deliveries = load_all()
     for d in deliveries:
@@ -70,7 +71,23 @@ def _check_assigned_driver(delivery: Delivery, current_user_id: str) -> None:
     if delivery.driver is None or delivery.driver.id != current_user_id:
         raise HTTPException(status_code=403, detail="You are not the assigned driver for this delivery")
 
-def assign_driver(delivery_id: str, driver: Driver) -> Delivery:
+def assign_driver(delivery_id: str, driver_id: str) -> Delivery:
+    drivers = load_all_drivers()
+    driver_data = None
+    for d in drivers:
+        if d.get("user_id") == driver_id:
+            driver_data = d
+            break
+    if not driver_data:
+        raise KeyError(f"Driver {driver_id} not found")
+
+    driver = Driver(
+        id=driver_data["user_id"],
+        name=driver_data["name"],
+        phone=driver_data["phone"],
+        status="busy",
+    )
+
     delivery = get_delivery(delivery_id)
     _validate_transition(delivery.status, DeliveryStatus.ASSIGNED)
     delivery.driver = driver

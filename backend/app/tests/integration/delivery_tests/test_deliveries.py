@@ -1,14 +1,38 @@
 from fastapi.testclient import TestClient
 from main import app
+from services.auth_service import get_current_user
+from schemas.auth import UserResponse
 
 client = TestClient(app)
 
-VALID_DRIVER = {
-    "id": "1",
+DRIVER_USER = {
     "name": "John Smith",
-    "phone": "+123456789",
-    "status": "online"
+    "email": "driver2@test.com",
+    "password": "password123",
+    "role": "driver",
 }
+
+VALID_PROFILE = {
+    "phone": "+123456789",
+    "vehicle_type": "Sedan",
+    "license_plate": "ABC123",
+}
+
+
+def _setup_driver():
+    app.dependency_overrides.pop(get_current_user, None)
+    client.post("/auth/register", json=DRIVER_USER)
+    login = client.post("/auth/login", json={
+        "email": DRIVER_USER["email"],
+        "password": DRIVER_USER["password"],
+    }).json()
+    token = login["token"]
+    driver_id = login["user"]["id"]
+    client.post("/drivers/profile", json=VALID_PROFILE, headers={"Authorization": f"Bearer {token}"})
+    app.dependency_overrides[get_current_user] = lambda: UserResponse(
+        id=driver_id, name="John Smith", email="john@test.com", role="driver", created_at="2024-01-01T00:00:00Z"
+    )
+    return driver_id
 
 def test_create_delivery():
     response = client.post("/deliveries/", params={
@@ -67,13 +91,15 @@ def test_delete_delivery_not_found():
 
 
 def test_assign_driver(test_delivery):
-    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", json=VALID_DRIVER)
+    driver_id = _setup_driver()
+    response = client.patch(f"/deliveries/{test_delivery['id']}/assign", params={"driver_id": driver_id})
     assert response.status_code == 200
     assert response.json()["status"] == "assigned"
-    assert response.json()["driver"]["id"] == VALID_DRIVER["id"]
+    assert response.json()["driver"]["id"] == driver_id
+    assert response.json()["driver"]["status"] == "busy"
 
 def test_assign_driver_not_found():
-    response = client.patch("/deliveries/99999/assign", json=VALID_DRIVER)
+    response = client.patch("/deliveries/99999/assign", params={"driver_id": "fake-id"})
     assert response.status_code == 404
 
 
