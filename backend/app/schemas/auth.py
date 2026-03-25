@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-from typing import Literal
+from typing import Literal, Optional
 
 
 Role = Literal["user", "owner", "manager", "driver"]
@@ -10,6 +10,7 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     role: Role
+    address: Optional[str] = None
 
     @field_validator("name", "password")
     @classmethod
@@ -53,6 +54,7 @@ class UserResponse(BaseModel):
     email: str
     role: Role
     created_at: str
+    address: Optional[str] = None
 
 
 class LoginResponse(BaseModel):

@@ -20,6 +20,7 @@ class OrderCreate(BaseModel):
     restaurant_id: int
     customer_id: str
     items: List[OrderItem] = Field(..., min_length=1)
+    delivery_address: Optional[str] = None
 
 
 class OrderUpdate(BaseModel):
@@ -34,3 +35,4 @@ class Order(BaseModel):
     status: OrderStatus = OrderStatus.DRAFT
     created_at: str
     confirmed_at: Optional[str] = None
+    delivery_address: Optional[str] = None
