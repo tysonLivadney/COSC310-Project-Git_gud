@@ -160,3 +160,45 @@ def test_confirm_already_confirmed():
 def test_confirm_nonexistent_order():
     response = client.post("/orders/fake-id/confirm")
     assert response.status_code == 404
+
+
+#DELETE /orders/{id} tests
+def test_cancel_draft_order():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    response = client.delete(f"/orders/{order['id']}")
+    assert response.status_code == 204
+
+
+def test_cancelled_order_status():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "cancelled"
+
+
+def test_cancel_confirmed_order_fails():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm")
+    response = client.delete(f"/orders/{order['id']}")
+    assert response.status_code == 400
+
+
+def test_cancel_nonexistent_order():
+    response = client.delete("/orders/fake-id")
+    assert response.status_code == 404
+
+
+def test_cannot_update_cancelled_order():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.delete(f"/orders/{order['id']}")
+    new_items = [{"food_item": "Fries", "quantity": 1, "unit_price": 5.00}]
+    response = client.put(f"/orders/{order['id']}", json={"items": new_items})
+    assert response.status_code == 400
+
+
+def test_cannot_confirm_cancelled_order():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.delete(f"/orders/{order['id']}")
+    response = client.post(f"/orders/{order['id']}/confirm")
+    assert response.status_code == 400
