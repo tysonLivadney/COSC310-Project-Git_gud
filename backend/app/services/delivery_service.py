@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
 from repositories.delivery_repo import load_all, save_all
-from repositories.drivers_repo import load_all as load_all_drivers
+from repositories.drivers_repo import load_all as load_all_drivers, save_all as save_all_drivers
 from repositories.orders_repo import load_all as load_all_orders
 from repositories.restaurants_repo import load_all as load_all_restaurants
 from services import notifications_service
@@ -34,10 +34,28 @@ def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff
         pickup_address=pickup_address,
         dropoff_address=dropoff_address,
         )
+
+    # try to auto assign an available driver
+    drivers = load_all_drivers()
+    for d in drivers:
+        if d.get("available"):
+            delivery.driver = Driver(
+                id=d["user_id"],
+                name=d["name"],
+                phone=d["phone"],
+                status="busy",
+            )
+            delivery.status = DeliveryStatus.ASSIGNED
+            d["available"] = False
+            save_all_drivers(drivers)
+            break
+
     deliveries = load_all()
     deliveries.append(delivery.model_dump(mode="json"))
     save_all(deliveries)
     notifications_service.notify(delivery, NotificationType.DELIVERY_CREATED)
+    if delivery.status == DeliveryStatus.ASSIGNED:
+        notifications_service.notify(delivery, NotificationType.DELIVERY_ASSIGNED)
     return delivery
 
 def _update(delivery: Delivery) -> None:

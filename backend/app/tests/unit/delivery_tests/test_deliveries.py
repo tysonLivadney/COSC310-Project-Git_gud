@@ -11,12 +11,13 @@ VALID_DRIVER_PROFILE = {
     "phone": "+123456789",
     "vehicle_type": "Sedan",
     "license_plate": "ABC123",
-    "available": True,
+    "available": False,
 }
 
 
-def _seed_driver():
-    save_drivers([VALID_DRIVER_PROFILE])
+def _seed_driver(available=False):
+    profile = {**VALID_DRIVER_PROFILE, "available": available}
+    save_drivers([profile])
 
 def test_create_delivery():
     delivery = delivery_service.create_delivery("100","Pickup","Dropoff")
