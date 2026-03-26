@@ -7,6 +7,8 @@ from repositories.orders_repo import load_all
 from repositories.delivery_repo import load_all as load_all_deliveries
 from repositories.reviews_repo import load_all as load_all_reviews
 
+TOP_RESTAURANTS_LIMIT = 5
+
 
 def _filter_by_date_range(orders: list, date_from: Optional[str], date_to: Optional[str]) -> list:
     if date_from:
@@ -111,7 +113,7 @@ def _calculate_avg_delivery_time() -> Optional[float]:
     return round(total_minutes / len(completed), 2)
 
 
-def _get_highest_rated_restaurants(limit: int = 5) -> List[int]:
+def _get_highest_rated_restaurants(limit: int = TOP_RESTAURANTS_LIMIT) -> List[int]:
     reviews = load_all_reviews()
 
     if not reviews:

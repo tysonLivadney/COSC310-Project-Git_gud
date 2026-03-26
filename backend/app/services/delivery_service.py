@@ -1,4 +1,4 @@
-from schemas import Delivery, DeliveryStatus, Driver
+from schemas import Delivery, DeliveryStatus, Driver, DriverStatus
 from schemas.notifications import NotificationType
 from datetime import datetime
 from typing import Optional
@@ -43,7 +43,7 @@ def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff
                 id=d["user_id"],
                 name=d["name"],
                 phone=d["phone"],
-                status="busy",
+                status=DriverStatus.BUSY,
             )
             delivery.status = DeliveryStatus.ASSIGNED
             d["available"] = False
@@ -106,7 +106,7 @@ def assign_driver(delivery_id: str, driver_id: str) -> Delivery:
         id=driver_data["user_id"],
         name=driver_data["name"],
         phone=driver_data["phone"],
-        status="busy",
+        status=DriverStatus.BUSY,
     )
 
     delivery = get_delivery(delivery_id)
