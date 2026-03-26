@@ -36,7 +36,7 @@ def test_register_user_without_address():
     assert result.address is None
 
 
-def testbuild_user_response_includes_address():
+def test_build_user_response_includes_address():
     user_dict = {
         "id": "u1",
         "name": "Carol",
@@ -49,7 +49,7 @@ def testbuild_user_response_includes_address():
     assert result.address == "123 Main St"
 
 
-def testbuild_user_response_missing_address_key():
+def test_build_user_response_missing_address_key():
     user_dict = {
         "id": "u2",
         "name": "Dave",
@@ -83,7 +83,7 @@ def test_create_order_falls_back_to_user_address():
     mock_users = [{"id": "cust2", "address": "789 Oak Ave"}]
     with patch("services.orders_service.load_all", return_value=[]), \
          patch("services.orders_service.save_all"), \
-         patch("services.orders_service.load_all_users", return_value=mock_users):
+         patch("services.address_resolver.load_all_users", return_value=mock_users):
         result = create_order(payload)
     assert result.delivery_address == "789 Oak Ave"
 
@@ -97,7 +97,7 @@ def test_create_order_no_address_anywhere():
     mock_users = [{"id": "cust3"}]
     with patch("services.orders_service.load_all", return_value=[]), \
          patch("services.orders_service.save_all"), \
-         patch("services.orders_service.load_all_users", return_value=mock_users):
+         patch("services.address_resolver.load_all_users", return_value=mock_users):
         result = create_order(payload)
     assert result.delivery_address is None
 
@@ -124,8 +124,8 @@ def test_update_order_preserves_delivery_address():
 def test_create_delivery_autofills_dropoff_from_order():
     mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
     mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
-    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
-         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+    with patch("services.address_resolver.load_all_orders", return_value=mock_orders), \
+         patch("services.address_resolver.load_all_restaurants", return_value=mock_restaurants):
         result = create_delivery("order1")
     assert result.dropoff_address == "456 Dropoff Ave"
 
@@ -133,8 +133,8 @@ def test_create_delivery_autofills_dropoff_from_order():
 def test_create_delivery_autofills_pickup_from_restaurant():
     mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
     mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
-    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
-         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+    with patch("services.address_resolver.load_all_orders", return_value=mock_orders), \
+         patch("services.address_resolver.load_all_restaurants", return_value=mock_restaurants):
         result = create_delivery("order1")
     assert result.pickup_address == "123 Pickup St"
 
@@ -142,8 +142,8 @@ def test_create_delivery_autofills_pickup_from_restaurant():
 def test_create_delivery_explicit_addresses_not_overridden():
     mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
     mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
-    with patch("services.delivery_service.load_all_orders", return_value=mock_orders), \
-         patch("services.delivery_service.load_all_restaurants", return_value=mock_restaurants):
+    with patch("services.address_resolver.load_all_orders", return_value=mock_orders), \
+         patch("services.address_resolver.load_all_restaurants", return_value=mock_restaurants):
         result = create_delivery("order1", pickup_address="Custom Pickup", dropoff_address="Custom Dropoff")
     assert result.pickup_address == "Custom Pickup"
     assert result.dropoff_address == "Custom Dropoff"

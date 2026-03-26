@@ -5,9 +5,8 @@ from typing import Optional
 from fastapi import HTTPException
 from repositories.delivery_repo import load_all, save_all
 from repositories.drivers_repo import load_all as load_all_drivers, save_all as save_all_drivers
-from repositories.orders_repo import load_all as load_all_orders
-from repositories.restaurants_repo import load_all as load_all_restaurants
 from services import notifications_service
+from services.address_resolver import resolve_delivery_addresses
 from uuid import uuid4
 
 
@@ -17,17 +16,7 @@ def create_delivery(order_id: str, pickup_address: Optional[str] = None, dropoff
     new_id = str(uuid4())
     if any(it.get("id") == new_id for it in deliveries):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    if not pickup_address or not dropoff_address:
-        orders = load_all_orders()
-        order = next((o for o in orders if o.get("id") == order_id), None)
-        if order:
-            if not dropoff_address:
-                dropoff_address = order.get("delivery_address")
-            if not pickup_address:
-                restaurants = load_all_restaurants()
-                restaurant = next((r for r in restaurants if str(r.get("id")) == str(order.get("restaurant_id"))), None)
-                if restaurant:
-                    pickup_address = restaurant.get("address")
+    pickup_address, dropoff_address = resolve_delivery_addresses(order_id, pickup_address, dropoff_address)
     delivery = Delivery(
         id=new_id,
         order_id=order_id,
