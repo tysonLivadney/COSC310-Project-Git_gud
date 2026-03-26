@@ -5,6 +5,6 @@
     "phone": "+123456789",
     "vehicle_type": "Sedan",
     "license_plate": "ABC123",
-    "available": true
+    "available": false
   }
 ]
