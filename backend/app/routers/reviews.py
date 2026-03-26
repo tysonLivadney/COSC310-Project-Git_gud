@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from typing import List, Optional
 from schemas.review import Review, ReviewCreate, RatingSummary, RestaurantRatingsView
 from schemas.auth import UserResponse
-from services.auth_service import require_roles
+from services.auth_dependencies import require_roles
 from services.reviews_service import create_review, get_reviews_by_restaurant, get_rating_summary, get_restaurant_ratings_view
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])

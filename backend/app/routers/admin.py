@@ -3,7 +3,7 @@ from typing import List, Optional
 from schemas.order import Order, OrderStatus
 from schemas.admin import AdminReport
 from schemas.auth import UserResponse
-from services.auth_service import require_roles
+from services.auth_dependencies import require_roles
 from services.admin_service import list_all_orders, generate_report
 
 router = APIRouter(prefix="/admin", tags=["admin"])

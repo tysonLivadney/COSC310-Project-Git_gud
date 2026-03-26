@@ -3,7 +3,7 @@ from typing import Optional
 from schemas import Delivery, Driver
 from schemas.auth import UserResponse
 from services import delivery_service
-from services.auth_service import get_current_user
+from services.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/deliveries", tags=["deliveries"])
 @router.post("/", response_model=Delivery)
