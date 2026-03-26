@@ -302,5 +302,613 @@
     "message": "Delivery 0f65d35c-1961-46e0-a2ca-8648d06191db has been assigned to driver Test Driver",
     "read": false,
     "created_at": "2026-03-25T15:40:58.487665"
+  },
+  {
+    "id": "9dc2414b-4bc7-4065-b1b0-1b9f38c98fa6",
+    "delivery_id": "38657f70-ee13-46f8-a5f4-ef5806903260",
+    "type": "delivery_created",
+    "message": "Delivery 38657f70-ee13-46f8-a5f4-ef5806903260 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.155151"
+  },
+  {
+    "id": "cdc2e919-af46-4cc1-99e7-ec499ce6a83a",
+    "delivery_id": "7499d287-3a93-43ec-86d6-d3b8db2eaf47",
+    "type": "delivery_created",
+    "message": "Delivery 7499d287-3a93-43ec-86d6-d3b8db2eaf47 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.198674"
+  },
+  {
+    "id": "9d3ed9ac-8541-4e2c-81fe-26051f98f42a",
+    "delivery_id": "d38b1f6a-7a20-4323-8b2a-9fec49a8ba88",
+    "type": "delivery_created",
+    "message": "Delivery d38b1f6a-7a20-4323-8b2a-9fec49a8ba88 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.330478"
+  },
+  {
+    "id": "a7489dc5-565f-4cf8-a746-568e9f3f326b",
+    "delivery_id": "8d782e90-b76b-42cb-a74e-b66a0eb5cc20",
+    "type": "delivery_created",
+    "message": "Delivery 8d782e90-b76b-42cb-a74e-b66a0eb5cc20 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.426211"
+  },
+  {
+    "id": "f0c15592-0b84-4505-9b1f-de95572b55da",
+    "delivery_id": "8dd0f760-0b2d-4005-a47f-4a8d7a7e5151",
+    "type": "delivery_created",
+    "message": "Delivery 8dd0f760-0b2d-4005-a47f-4a8d7a7e5151 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.534166"
+  },
+  {
+    "id": "ad93b2c6-dee4-40f3-9c5b-722df94b75ba",
+    "delivery_id": "8dd0f760-0b2d-4005-a47f-4a8d7a7e5151",
+    "type": "delivery_assigned",
+    "message": "Delivery 8dd0f760-0b2d-4005-a47f-4a8d7a7e5151 has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.654616"
+  },
+  {
+    "id": "c637a86b-9524-4bcd-8cb8-28f46064a638",
+    "delivery_id": "02d549eb-1ee9-42a4-8b21-95c346a5e8e2",
+    "type": "delivery_created",
+    "message": "Delivery 02d549eb-1ee9-42a4-8b21-95c346a5e8e2 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.742137"
+  },
+  {
+    "id": "bb641acf-edf5-4139-93a9-8a1642c5ae99",
+    "delivery_id": "02d549eb-1ee9-42a4-8b21-95c346a5e8e2",
+    "type": "delivery_assigned",
+    "message": "Delivery 02d549eb-1ee9-42a4-8b21-95c346a5e8e2 has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.863199"
+  },
+  {
+    "id": "1e9c29ab-cb9a-4eb8-9f2f-5b8305dbfccf",
+    "delivery_id": "02d549eb-1ee9-42a4-8b21-95c346a5e8e2",
+    "type": "delivery_picked_up",
+    "message": "Delivery 02d549eb-1ee9-42a4-8b21-95c346a5e8e2 has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.880552"
+  },
+  {
+    "id": "258b03ad-6bd2-4f99-85ba-39d4886fb3a4",
+    "delivery_id": "ae5aff10-2363-47d8-810b-44ae13dc45ce",
+    "type": "delivery_created",
+    "message": "Delivery ae5aff10-2363-47d8-810b-44ae13dc45ce has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:09.929268"
+  },
+  {
+    "id": "b4698192-393c-45bf-aa4e-4fc09b1a95d6",
+    "delivery_id": "c301776b-7bd5-456d-aacb-dd07c40331bf",
+    "type": "delivery_created",
+    "message": "Delivery c301776b-7bd5-456d-aacb-dd07c40331bf has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.030437"
+  },
+  {
+    "id": "446ad8d4-273c-4895-b4f4-2123aea10b6a",
+    "delivery_id": "c301776b-7bd5-456d-aacb-dd07c40331bf",
+    "type": "delivery_assigned",
+    "message": "Delivery c301776b-7bd5-456d-aacb-dd07c40331bf has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.152488"
+  },
+  {
+    "id": "4f3fbbad-337b-4dc9-b199-ab92fcc8d8f9",
+    "delivery_id": "c301776b-7bd5-456d-aacb-dd07c40331bf",
+    "type": "delivery_picked_up",
+    "message": "Delivery c301776b-7bd5-456d-aacb-dd07c40331bf has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.171489"
+  },
+  {
+    "id": "36738d34-681a-4ccb-8d31-0beeb5d47ee3",
+    "delivery_id": "c301776b-7bd5-456d-aacb-dd07c40331bf",
+    "type": "delivery_in_transit",
+    "message": "Delivery c301776b-7bd5-456d-aacb-dd07c40331bf is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.189581"
+  },
+  {
+    "id": "332ff7cd-5d49-428c-91c0-c9f5c82ea8b9",
+    "delivery_id": "0da14d7c-f938-489f-a3a3-f1dbd4185b05",
+    "type": "delivery_created",
+    "message": "Delivery 0da14d7c-f938-489f-a3a3-f1dbd4185b05 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.248585"
+  },
+  {
+    "id": "ba686b35-093e-4397-91e1-a4b659686356",
+    "delivery_id": "61613d4f-2bc7-4e8d-b123-415bb859338e",
+    "type": "delivery_created",
+    "message": "Delivery 61613d4f-2bc7-4e8d-b123-415bb859338e has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.357526"
+  },
+  {
+    "id": "4a5e6d3b-f0ac-4279-8d12-39967fe8fda5",
+    "delivery_id": "61613d4f-2bc7-4e8d-b123-415bb859338e",
+    "type": "delivery_assigned",
+    "message": "Delivery 61613d4f-2bc7-4e8d-b123-415bb859338e has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.485210"
+  },
+  {
+    "id": "d74c0e56-f6ea-4cb3-ae85-ebea66a0cbc5",
+    "delivery_id": "61613d4f-2bc7-4e8d-b123-415bb859338e",
+    "type": "delivery_picked_up",
+    "message": "Delivery 61613d4f-2bc7-4e8d-b123-415bb859338e has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.507210"
+  },
+  {
+    "id": "75e8b1f6-8d69-49f8-a418-f0433e92ab3f",
+    "delivery_id": "61613d4f-2bc7-4e8d-b123-415bb859338e",
+    "type": "delivery_in_transit",
+    "message": "Delivery 61613d4f-2bc7-4e8d-b123-415bb859338e is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.530213"
+  },
+  {
+    "id": "70df1fc8-2d3d-4d3f-ab23-facefb6186fd",
+    "delivery_id": "61613d4f-2bc7-4e8d-b123-415bb859338e",
+    "type": "delivery_completed",
+    "message": "Delivery 61613d4f-2bc7-4e8d-b123-415bb859338e has been delivered",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.552102"
+  },
+  {
+    "id": "7ae186a8-b13c-4817-ad34-074aa37e286b",
+    "delivery_id": "6373e33d-d668-4984-8840-c0f7d23a7ddd",
+    "type": "delivery_created",
+    "message": "Delivery 6373e33d-d668-4984-8840-c0f7d23a7ddd has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.604622"
+  },
+  {
+    "id": "e1010986-dc6d-46a8-ae75-0f48476f9437",
+    "delivery_id": "d73a0196-41c3-4ccb-8465-2c16cbc94148",
+    "type": "delivery_created",
+    "message": "Delivery d73a0196-41c3-4ccb-8465-2c16cbc94148 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.699746"
+  },
+  {
+    "id": "913ec8e6-599d-4f9c-8c01-24b0d9bbb745",
+    "delivery_id": "d73a0196-41c3-4ccb-8465-2c16cbc94148",
+    "type": "delivery_cancelled",
+    "message": "Delivery d73a0196-41c3-4ccb-8465-2c16cbc94148 has been cancelled",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.723744"
+  },
+  {
+    "id": "71259d9b-1750-440c-ba17-9657b5de450d",
+    "delivery_id": "f3050880-85af-4b40-8acc-ad7604363f20",
+    "type": "delivery_created",
+    "message": "Delivery f3050880-85af-4b40-8acc-ad7604363f20 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.768750"
+  },
+  {
+    "id": "7870c134-edf2-4c00-b835-fc4312c56007",
+    "delivery_id": "f3050880-85af-4b40-8acc-ad7604363f20",
+    "type": "delivery_assigned",
+    "message": "Delivery f3050880-85af-4b40-8acc-ad7604363f20 has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.886815"
+  },
+  {
+    "id": "3ec5a804-7acc-47b4-9f9c-45682b023afc",
+    "delivery_id": "f3050880-85af-4b40-8acc-ad7604363f20",
+    "type": "delivery_picked_up",
+    "message": "Delivery f3050880-85af-4b40-8acc-ad7604363f20 has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.908970"
+  },
+  {
+    "id": "d7a00529-75e7-41ab-8da6-339420483980",
+    "delivery_id": "f3050880-85af-4b40-8acc-ad7604363f20",
+    "type": "delivery_in_transit",
+    "message": "Delivery f3050880-85af-4b40-8acc-ad7604363f20 is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.927027"
+  },
+  {
+    "id": "40c27338-5857-4459-9456-1d99397cede2",
+    "delivery_id": "f3050880-85af-4b40-8acc-ad7604363f20",
+    "type": "delivery_completed",
+    "message": "Delivery f3050880-85af-4b40-8acc-ad7604363f20 has been delivered",
+    "read": false,
+    "created_at": "2026-03-25T23:01:10.950007"
+  },
+  {
+    "id": "d7e3204d-79a5-408b-9742-25e59290efd9",
+    "delivery_id": "a6c036c1-c0f8-4ccf-b254-507d2ba5f05e",
+    "type": "delivery_created",
+    "message": "Delivery a6c036c1-c0f8-4ccf-b254-507d2ba5f05e has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:01:16.620453"
+  },
+  {
+    "id": "9df6c338-a80e-4ca8-98b6-d696b9ce808c",
+    "delivery_id": "e81f22ca-d8e1-436d-8023-960396bc9db6",
+    "type": "delivery_created",
+    "message": "Delivery e81f22ca-d8e1-436d-8023-960396bc9db6 has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:01:16.650453"
+  },
+  {
+    "id": "80a7318a-6e5f-47f2-950b-c4a1d5772395",
+    "delivery_id": "af1aabb9-7974-4b6c-8b8a-329a362ad1dc",
+    "type": "delivery_created",
+    "message": "Delivery af1aabb9-7974-4b6c-8b8a-329a362ad1dc has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:01:16.679462"
+  },
+  {
+    "id": "8b6f59f6-2398-48b9-bfd2-1e4efb68abbe",
+    "delivery_id": "43ce1538-c68f-4d87-a13c-d06ed4c16e82",
+    "type": "delivery_created",
+    "message": "Delivery 43ce1538-c68f-4d87-a13c-d06ed4c16e82 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:19.837436"
+  },
+  {
+    "id": "0e868156-ee84-407b-937b-bca609c19fb8",
+    "delivery_id": "43ce1538-c68f-4d87-a13c-d06ed4c16e82",
+    "type": "delivery_assigned",
+    "message": "Delivery 43ce1538-c68f-4d87-a13c-d06ed4c16e82 has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:01:19.957601"
+  },
+  {
+    "id": "222afb8a-fd6d-4aad-8d36-8e92ba3d63b1",
+    "delivery_id": "398bb256-c029-45ce-8b48-74f385575ae6",
+    "type": "delivery_created",
+    "message": "Delivery 398bb256-c029-45ce-8b48-74f385575ae6 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:20.014780"
+  },
+  {
+    "id": "e629fe71-d57e-4667-9323-f837e2fd0b34",
+    "delivery_id": "d05c759b-3545-4693-9324-ad61d461a204",
+    "type": "delivery_created",
+    "message": "Delivery d05c759b-3545-4693-9324-ad61d461a204 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:20.217124"
+  },
+  {
+    "id": "e8b6d1c2-cf6e-4a55-bc3e-1305b8add29a",
+    "delivery_id": "d05c759b-3545-4693-9324-ad61d461a204",
+    "type": "delivery_assigned",
+    "message": "Delivery d05c759b-3545-4693-9324-ad61d461a204 has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:01:20.336643"
+  },
+  {
+    "id": "5a34c750-3935-49b7-84ff-d10276d108d8",
+    "delivery_id": "d7185e38-67bd-48e9-be67-66005fa13c29",
+    "type": "delivery_created",
+    "message": "Delivery d7185e38-67bd-48e9-be67-66005fa13c29 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:01:20.387735"
+  },
+  {
+    "id": "ebebffcd-004a-43b9-ac04-505f1556032f",
+    "delivery_id": "d7185e38-67bd-48e9-be67-66005fa13c29",
+    "type": "delivery_assigned",
+    "message": "Delivery d7185e38-67bd-48e9-be67-66005fa13c29 has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:01:20.511012"
+  },
+  {
+    "id": "ad8bf8d9-5d39-4de9-8776-66bd3ed153fe",
+    "delivery_id": "b9da73ca-80bb-4bf3-a599-f56815f918ce",
+    "type": "delivery_created",
+    "message": "Delivery b9da73ca-80bb-4bf3-a599-f56815f918ce has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.483162"
+  },
+  {
+    "id": "a991899c-15be-4381-aa2f-b23761723cee",
+    "delivery_id": "8fedf242-10d5-472f-b81b-136c76e7bf2b",
+    "type": "delivery_created",
+    "message": "Delivery 8fedf242-10d5-472f-b81b-136c76e7bf2b has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.532170"
+  },
+  {
+    "id": "4f1d3a71-2821-4713-be53-b78d08d6d22c",
+    "delivery_id": "8a7a6215-ea91-4226-b876-d7c54a712c34",
+    "type": "delivery_created",
+    "message": "Delivery 8a7a6215-ea91-4226-b876-d7c54a712c34 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.662117"
+  },
+  {
+    "id": "798572f8-5267-4413-8a8f-c3bc656f45fa",
+    "delivery_id": "1b3df2ee-0534-4cbf-a7a1-ca410ab71a67",
+    "type": "delivery_created",
+    "message": "Delivery 1b3df2ee-0534-4cbf-a7a1-ca410ab71a67 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.771710"
+  },
+  {
+    "id": "aa73c619-bace-472c-8872-6abad7165162",
+    "delivery_id": "b359cd7d-d4e0-42c0-8e6f-7ec95dc7428e",
+    "type": "delivery_created",
+    "message": "Delivery b359cd7d-d4e0-42c0-8e6f-7ec95dc7428e has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.870745"
+  },
+  {
+    "id": "24fc0f4a-e3ae-4df3-9fc5-52faf16f40ae",
+    "delivery_id": "b359cd7d-d4e0-42c0-8e6f-7ec95dc7428e",
+    "type": "delivery_assigned",
+    "message": "Delivery b359cd7d-d4e0-42c0-8e6f-7ec95dc7428e has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:02:01.990921"
+  },
+  {
+    "id": "63ecfa0e-8c7d-4e98-9786-1981a5fd6ede",
+    "delivery_id": "af057664-d003-4cc6-b6a3-328108e9edce",
+    "type": "delivery_created",
+    "message": "Delivery af057664-d003-4cc6-b6a3-328108e9edce has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.070420"
+  },
+  {
+    "id": "47ac92e8-edd4-4b1e-87ab-19022b2030d1",
+    "delivery_id": "af057664-d003-4cc6-b6a3-328108e9edce",
+    "type": "delivery_assigned",
+    "message": "Delivery af057664-d003-4cc6-b6a3-328108e9edce has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.188473"
+  },
+  {
+    "id": "7a20a21e-1019-45dd-a349-bd9225eb443a",
+    "delivery_id": "af057664-d003-4cc6-b6a3-328108e9edce",
+    "type": "delivery_picked_up",
+    "message": "Delivery af057664-d003-4cc6-b6a3-328108e9edce has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.206470"
+  },
+  {
+    "id": "32ef9f59-4a5a-43db-aa1e-fc515bc1f62e",
+    "delivery_id": "a94c06f4-8a3f-4337-8fb6-637983285326",
+    "type": "delivery_created",
+    "message": "Delivery a94c06f4-8a3f-4337-8fb6-637983285326 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.252509"
+  },
+  {
+    "id": "9f7227d7-16b4-4c97-96be-5956112517fa",
+    "delivery_id": "2258c87d-d95f-41d7-85b2-259082f4efce",
+    "type": "delivery_created",
+    "message": "Delivery 2258c87d-d95f-41d7-85b2-259082f4efce has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.351602"
+  },
+  {
+    "id": "40e5f98b-3fe3-4d46-9a52-db238647070c",
+    "delivery_id": "2258c87d-d95f-41d7-85b2-259082f4efce",
+    "type": "delivery_assigned",
+    "message": "Delivery 2258c87d-d95f-41d7-85b2-259082f4efce has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.470757"
+  },
+  {
+    "id": "6184bf03-d53e-41c9-8fd7-2eeb91d4a470",
+    "delivery_id": "2258c87d-d95f-41d7-85b2-259082f4efce",
+    "type": "delivery_picked_up",
+    "message": "Delivery 2258c87d-d95f-41d7-85b2-259082f4efce has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.489757"
+  },
+  {
+    "id": "130e4b79-b050-4e71-a939-472592b67714",
+    "delivery_id": "2258c87d-d95f-41d7-85b2-259082f4efce",
+    "type": "delivery_in_transit",
+    "message": "Delivery 2258c87d-d95f-41d7-85b2-259082f4efce is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.510757"
+  },
+  {
+    "id": "77c73eb6-fea9-446c-8261-b0376e65062e",
+    "delivery_id": "e49a366d-611f-497f-8153-99f29fdbbf44",
+    "type": "delivery_created",
+    "message": "Delivery e49a366d-611f-497f-8153-99f29fdbbf44 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.564765"
+  },
+  {
+    "id": "6647b736-49b1-4629-a311-e12d44faccfd",
+    "delivery_id": "98452870-0a0a-4859-b628-eec11781f8ed",
+    "type": "delivery_created",
+    "message": "Delivery 98452870-0a0a-4859-b628-eec11781f8ed has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.664329"
+  },
+  {
+    "id": "a6ce2098-7edd-4423-aa16-fca389565cc8",
+    "delivery_id": "98452870-0a0a-4859-b628-eec11781f8ed",
+    "type": "delivery_assigned",
+    "message": "Delivery 98452870-0a0a-4859-b628-eec11781f8ed has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.788873"
+  },
+  {
+    "id": "3ce99584-49f9-46a1-b3c5-94e4769f6cc7",
+    "delivery_id": "98452870-0a0a-4859-b628-eec11781f8ed",
+    "type": "delivery_picked_up",
+    "message": "Delivery 98452870-0a0a-4859-b628-eec11781f8ed has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.810883"
+  },
+  {
+    "id": "364646c6-2db0-4b32-a55e-53472974ad8d",
+    "delivery_id": "98452870-0a0a-4859-b628-eec11781f8ed",
+    "type": "delivery_in_transit",
+    "message": "Delivery 98452870-0a0a-4859-b628-eec11781f8ed is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.833407"
+  },
+  {
+    "id": "cc942de2-6493-4e54-b1e1-e49bf5bda3f1",
+    "delivery_id": "98452870-0a0a-4859-b628-eec11781f8ed",
+    "type": "delivery_completed",
+    "message": "Delivery 98452870-0a0a-4859-b628-eec11781f8ed has been delivered",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.859484"
+  },
+  {
+    "id": "b2e477ef-1008-4b17-8b16-d6135934c507",
+    "delivery_id": "f99dc7a0-96b0-42f8-b3ed-b6cb91a00cf3",
+    "type": "delivery_created",
+    "message": "Delivery f99dc7a0-96b0-42f8-b3ed-b6cb91a00cf3 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:02.907978"
+  },
+  {
+    "id": "1baf259c-5a61-42ac-9674-5598afbbbf51",
+    "delivery_id": "dfb92f5a-1638-4934-8f49-0df35086a8b7",
+    "type": "delivery_created",
+    "message": "Delivery dfb92f5a-1638-4934-8f49-0df35086a8b7 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.003074"
+  },
+  {
+    "id": "41dc8c1a-bf50-4590-ac0c-902862a11cbd",
+    "delivery_id": "dfb92f5a-1638-4934-8f49-0df35086a8b7",
+    "type": "delivery_cancelled",
+    "message": "Delivery dfb92f5a-1638-4934-8f49-0df35086a8b7 has been cancelled",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.026555"
+  },
+  {
+    "id": "871629e7-7e1b-4722-85c6-b1efa0108b4c",
+    "delivery_id": "0abae905-9f77-4127-a987-d65e896a3132",
+    "type": "delivery_created",
+    "message": "Delivery 0abae905-9f77-4127-a987-d65e896a3132 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.072125"
+  },
+  {
+    "id": "c71ca974-9df1-492c-8571-ff48e3d4718c",
+    "delivery_id": "0abae905-9f77-4127-a987-d65e896a3132",
+    "type": "delivery_assigned",
+    "message": "Delivery 0abae905-9f77-4127-a987-d65e896a3132 has been assigned to driver John Smith",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.205247"
+  },
+  {
+    "id": "cc58e265-b1d1-485f-9177-f0067c7122b7",
+    "delivery_id": "0abae905-9f77-4127-a987-d65e896a3132",
+    "type": "delivery_picked_up",
+    "message": "Delivery 0abae905-9f77-4127-a987-d65e896a3132 has been picked up",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.223959"
+  },
+  {
+    "id": "d48dd8c5-a60e-4dff-b2b5-f4f2689ade46",
+    "delivery_id": "0abae905-9f77-4127-a987-d65e896a3132",
+    "type": "delivery_in_transit",
+    "message": "Delivery 0abae905-9f77-4127-a987-d65e896a3132 is on the way",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.242960"
+  },
+  {
+    "id": "b8fff03f-c627-4b21-8288-b135d8e02bb3",
+    "delivery_id": "0abae905-9f77-4127-a987-d65e896a3132",
+    "type": "delivery_completed",
+    "message": "Delivery 0abae905-9f77-4127-a987-d65e896a3132 has been delivered",
+    "read": false,
+    "created_at": "2026-03-25T23:02:03.260946"
+  },
+  {
+    "id": "9e28dc58-9e5c-4586-8e4a-8291d3bbd0a5",
+    "delivery_id": "344472a0-1bf8-42be-8414-bca462c0309d",
+    "type": "delivery_created",
+    "message": "Delivery 344472a0-1bf8-42be-8414-bca462c0309d has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:02:08.173843"
+  },
+  {
+    "id": "c713bb06-8872-4597-8ec7-dda6443fbd58",
+    "delivery_id": "388a8c5e-fefb-4782-a58d-19f18276fa1c",
+    "type": "delivery_created",
+    "message": "Delivery 388a8c5e-fefb-4782-a58d-19f18276fa1c has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:02:08.204842"
+  },
+  {
+    "id": "f925e5f6-17bc-48ad-8f6d-98e1ce49f81d",
+    "delivery_id": "8f8d8e7c-c047-4eb7-a93a-10209d921e94",
+    "type": "delivery_created",
+    "message": "Delivery 8f8d8e7c-c047-4eb7-a93a-10209d921e94 has been created for order order1",
+    "read": false,
+    "created_at": "2026-03-25T23:02:08.231844"
+  },
+  {
+    "id": "8c7618bb-6198-47b4-810d-68e1bf87825d",
+    "delivery_id": "8c29f357-a124-41c5-8678-169680f6ed1a",
+    "type": "delivery_created",
+    "message": "Delivery 8c29f357-a124-41c5-8678-169680f6ed1a has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.269082"
+  },
+  {
+    "id": "14a9539f-2f58-4b53-ad3f-2838781f0abd",
+    "delivery_id": "8c29f357-a124-41c5-8678-169680f6ed1a",
+    "type": "delivery_assigned",
+    "message": "Delivery 8c29f357-a124-41c5-8678-169680f6ed1a has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.405161"
+  },
+  {
+    "id": "79c6ceaa-2773-46b8-b4e7-6144be3ca050",
+    "delivery_id": "6d7e5285-2bff-445a-945f-617773966fa0",
+    "type": "delivery_created",
+    "message": "Delivery 6d7e5285-2bff-445a-945f-617773966fa0 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.454322"
+  },
+  {
+    "id": "7716cce3-450f-4fe5-9cc4-a257dc39273f",
+    "delivery_id": "d4bd9520-e451-49da-ba09-9a55c3c30183",
+    "type": "delivery_created",
+    "message": "Delivery d4bd9520-e451-49da-ba09-9a55c3c30183 has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.650299"
+  },
+  {
+    "id": "417aab2c-5051-4d67-8e36-6241192660c2",
+    "delivery_id": "d4bd9520-e451-49da-ba09-9a55c3c30183",
+    "type": "delivery_assigned",
+    "message": "Delivery d4bd9520-e451-49da-ba09-9a55c3c30183 has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.796330"
+  },
+  {
+    "id": "11f78764-a406-4b84-b5db-b9525418e6a2",
+    "delivery_id": "65563289-c53f-47b0-90d9-cb77e8a8c7fc",
+    "type": "delivery_created",
+    "message": "Delivery 65563289-c53f-47b0-90d9-cb77e8a8c7fc has been created for order 101",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.846463"
+  },
+  {
+    "id": "237806d2-b6f1-47ad-a2c3-b3dff4bc5b38",
+    "delivery_id": "65563289-c53f-47b0-90d9-cb77e8a8c7fc",
+    "type": "delivery_assigned",
+    "message": "Delivery 65563289-c53f-47b0-90d9-cb77e8a8c7fc has been assigned to driver Test Driver",
+    "read": false,
+    "created_at": "2026-03-25T23:02:11.984207"
   }
 ]

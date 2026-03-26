@@ -84,6 +84,6 @@ def test_delete_notification_invalid_delivery_id(test_notification):
     
 def test_delete_notification_removes_proper(test_notification):
     client.delete(f"/notifications/{test_notification['delivery_id']}/{test_notification['id']}")
-    remaining = client.get(f"/notifications/{test_notification["delivery_id"]}").json()
+    remaining = client.get(f"/notifications/{test_notification['delivery_id']}").json()
     assert not any(n["id"] == test_notification["id"] for n in remaining)
     

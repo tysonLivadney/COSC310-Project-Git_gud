@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": "1ac37e8b-976b-4b0f-8016-ffbf58240fe1",
+    "restaurant_id": "rest-123",
+    "customer_id": "cust-123",
+    "items": [
+      {
+        "food_item": "Burger",
+        "quantity": 2,
+        "unit_price": 12.5
+      }
+    ],
+    "status": "confirmed",
+    "created_at": "2026-03-26T06:01:22.355971+00:00",
+    "confirmed_at": "2026-03-26T06:01:22.397762+00:00",
+    "delivery_address": null,
+    "subtotal": "25.00",
+    "tax": "3.17",
+    "delivery_fee": "1.41",
+    "total": "29.58"
+  },
+  {
+    "id": "29c9becb-a2cc-4408-9219-d0057d671f3a",
+    "restaurant_id": "rest-123",
+    "customer_id": "cust-123",
+    "items": [
+      {
+        "food_item": "Burger",
+        "quantity": 2,
+        "unit_price": 12.5
+      }
+    ],
+    "status": "confirmed",
+    "created_at": "2026-03-26T06:02:13.772429+00:00",
+    "confirmed_at": "2026-03-26T06:02:13.804959+00:00",
+    "delivery_address": null,
+    "subtotal": "25.00",
+    "tax": "3.17",
+    "delivery_fee": "1.41",
+    "total": "29.58"
+  }
+]
