@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import List
 from schemas.driver_profile import DriverProfile, DriverProfileCreate, DriverProfileUpdate
 from schemas.auth import UserResponse
-from services.auth_service import require_roles
+from services.auth_dependencies import require_roles
 from services.drivers_service import (
     create_driver_profile,
     get_driver_profile,

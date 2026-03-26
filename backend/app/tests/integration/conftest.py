@@ -9,7 +9,7 @@ import pytest
 from pathlib import Path
 
 from main import app
-from services.auth_service import get_current_user
+from services.auth_dependencies import get_current_user
 from schemas.auth import UserResponse
 
 

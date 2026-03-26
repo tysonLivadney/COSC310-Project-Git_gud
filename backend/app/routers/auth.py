@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
 from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, UserResponse
-from services.auth_service import get_current_user, login_user, register_user
+from services.auth_service import login_user, register_user
+from services.auth_dependencies import get_current_user
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])

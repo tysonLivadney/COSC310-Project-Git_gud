@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from fastapi import HTTPException
-from services.auth_service import register_user, _build_user_response
+from services.auth_service import register_user, build_user_response
 from services.delivery_service import create_delivery
 from services.orders_service import create_order, update_order
 from schemas.auth import RegisterRequest, Role
@@ -36,7 +36,7 @@ def test_register_user_without_address():
     assert result.address is None
 
 
-def test_build_user_response_includes_address():
+def testbuild_user_response_includes_address():
     user_dict = {
         "id": "u1",
         "name": "Carol",
@@ -45,11 +45,11 @@ def test_build_user_response_includes_address():
         "created_at": "2024-01-01T00:00:00Z",
         "address": "123 Main St",
     }
-    result = _build_user_response(user_dict)
+    result = build_user_response(user_dict)
     assert result.address == "123 Main St"
 
 
-def test_build_user_response_missing_address_key():
+def testbuild_user_response_missing_address_key():
     user_dict = {
         "id": "u2",
         "name": "Dave",
@@ -57,7 +57,7 @@ def test_build_user_response_missing_address_key():
         "role": "user",
         "created_at": "2024-01-01T00:00:00Z",
     }
-    result = _build_user_response(user_dict)
+    result = build_user_response(user_dict)
     assert result.address is None
 
 
