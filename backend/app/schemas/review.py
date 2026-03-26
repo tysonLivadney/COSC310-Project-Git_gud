@@ -32,8 +32,5 @@ class RatingSummary(BaseModel):
     total_reviews: int
 
 
-class RestaurantRatingsView(BaseModel):
-    restaurant_id: int
-    average_rating: float
-    total_reviews: int
+class RestaurantRatingsView(RatingSummary):
     reviews: List[Review]
