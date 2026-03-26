@@ -27,6 +27,16 @@ def _require_draft(order: dict, action: str) -> None:
         raise HTTPException(status_code=400, detail=f"Only draft orders can be {action}.")
 
 
+def _resolve_delivery_address(customer_id, address):
+    if address:
+        return address
+    users = load_all_users()
+    user = next((u for u in users if u["id"] == customer_id), None)
+    if user:
+        return user.get("address")
+    return None
+
+
 location_service = LocationService()
 
 
@@ -45,12 +55,7 @@ def create_order(payload: OrderCreate) -> Order:
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
 
-    delivery_address = payload.delivery_address
-    if not delivery_address:
-        users = load_all_users()
-        user = next((u for u in users if u["id"] == payload.customer_id), None)
-        if user:
-            delivery_address = user.get("address")
+    delivery_address = _resolve_delivery_address(payload.customer_id, payload.delivery_address)
 
     new_order = Order(
         id=new_id,
