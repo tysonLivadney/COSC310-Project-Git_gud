@@ -96,12 +96,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
     return updated
 
 
-def confirm_order(order_id: str, payment_info: PaymentInfo):
-    idx, o, orders = _find_order(order_id)
-    _require_draft(o, "confirmed")
-
-    order = Order(**o)
-
+def _calculate_and_process_payment(order, order_id, payment_info):
     customer_location = location_service.get_user_location(order.customer_id)
     restaurant_location = location_service.get_restaurant_location(order.restaurant_id)
 
@@ -114,24 +109,36 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
 
     province = "BC"
     subtotal, tax_rate, tax, delivery_fee, total = OrderTotalService.calculate_order_total(
-        order,
-        province,
-        distance_km,
+        order, province, distance_km,
     )
 
     payment_request = PaymentProcessRequest(
-        order_id=order_id,
-        total=total,
-        payment_info=payment_info,
+        order_id=order_id, total=total, payment_info=payment_info,
     )
     payment_result = PaymentService.process_payment(payment_request)
 
+    return {
+        "payment": payment_result,
+        "distance_km": float(distance_km),
+        "subtotal": subtotal, "tax_rate": tax_rate,
+        "tax": tax, "delivery_fee": delivery_fee,
+        "total": total, "province": province,
+    }
+
+
+def confirm_order(order_id: str, payment_info: PaymentInfo):
+    idx, o, orders = _find_order(order_id)
+    _require_draft(o, "confirmed")
+
+    order = Order(**o)
+    pricing = _calculate_and_process_payment(order, order_id, payment_info)
+
     o["status"] = OrderStatus.CONFIRMED.value
     o["confirmed_at"] = datetime.now(timezone.utc).isoformat()
-    o["subtotal"] = str(subtotal)
-    o["tax"] = str(tax)
-    o["delivery_fee"] = str(delivery_fee)
-    o["total"] = str(total)
+    o["subtotal"] = str(pricing["subtotal"])
+    o["tax"] = str(pricing["tax"])
+    o["delivery_fee"] = str(pricing["delivery_fee"])
+    o["total"] = str(pricing["total"])
 
     orders[idx] = o
     save_all(orders)
@@ -140,14 +147,7 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
         "order_id": o["id"],
         "status": o["status"],
         "confirmed_at": o["confirmed_at"],
-        "payment": payment_result,
-        "distance_km": float(distance_km),
-        "subtotal": str(subtotal),
-        "tax_rate": str(tax_rate),
-        "tax": str(tax),
-        "delivery_fee": str(delivery_fee),
-        "total": str(total),
-        "province": province,
+        **pricing,
     }
 
 
