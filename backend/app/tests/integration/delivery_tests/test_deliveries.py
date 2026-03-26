@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from main import app
-from services.auth_service import get_current_user
+from services.auth_dependencies import get_current_user
 from schemas.auth import UserResponse
 
 client = TestClient(app)

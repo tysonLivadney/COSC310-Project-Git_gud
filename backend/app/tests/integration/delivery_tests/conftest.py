@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from services.auth_service import get_current_user
+from services.auth_dependencies import get_current_user
 from schemas.auth import UserResponse
 from repositories.delivery_repo import save_all as save_deliveries, load_all as load_deliveries
 from repositories.drivers_repo import save_all as save_drivers, load_all as load_drivers
