@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from schemas.order import Order, OrderCreate, OrderUpdate, OrderStatus
 from schemas.payment import PaymentInfo, PaymentProcessRequest
 from repositories.orders_repo import load_all, save_all
-from repositories.users_repo import load_all as load_all_users
+from services.address_resolver import resolve_customer_address
 from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService
 from services.payment_service import PaymentService
@@ -25,16 +25,6 @@ def _find_order(order_id: str) -> Tuple[int, dict, list]:
 def _require_draft(order: dict, action: str) -> None:
     if order.get("status") != OrderStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail=f"Only draft orders can be {action}.")
-
-
-def _resolve_delivery_address(customer_id, address):
-    if address:
-        return address
-    users = load_all_users()
-    user = next((u for u in users if u["id"] == customer_id), None)
-    if user:
-        return user.get("address")
-    return None
 
 
 location_service = LocationService()
@@ -55,7 +45,7 @@ def create_order(payload: OrderCreate) -> Order:
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
 
-    delivery_address = _resolve_delivery_address(payload.customer_id, payload.delivery_address)
+    delivery_address = resolve_customer_address(payload.customer_id, payload.delivery_address)
 
     new_order = Order(
         id=new_id,
