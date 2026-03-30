@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import api from "../../api.js";
-import AddRestaurantForm from './AddResaurantForm.jsx';
+import AddRestaurantForm from './AddRestaurantForm.jsx';
 
-const RestaurantList = () => {
+const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
 
   const fetchRestaurants = async () => {
     try {
+      const me = await api.get('/auth/me');
       const response = await api.get('/restaurants');
-      setRestaurants(response.data.restaurants);
+      const myRestaurants = response.data.filter(r => r.owner_id === me.data.id);
+      setRestaurants(myRestaurants);
     } catch (error) {
       console.error("Error fetching restaurants", error);
     }
   };
 
-  const addRestaurant = async (restaurantName) => {
+  const addRestaurant = async (restaurantData) => {
     try {
-      await api.post('/restaurants', { name: restaurantName });
-      fetchRestaurants();  // Refresh the list after adding a restaurant
+      await api.post('/restaurants', restaurantData);
+      fetchRestaurants(); 
     } catch (error) {
-      console.error("Error adding fruit", error);
+      console.error("Error adding restaurant", error);
     }
   };
 
@@ -29,10 +31,10 @@ const RestaurantList = () => {
 
   return (
     <div>
-      <h2>Restaurants List</h2>
+      <h2>Owned Restaurants</h2>
       <ul>
         {restaurants.map((restaurant, index) => (
-          <li key={index}>{restaurant.name}</li>
+          <li key={index}>{restaurant.name} - {restaurant.address} - {restaurant.description} - {restaurant.phone} - {restaurant.rating} - {restaurant.tags}</li>
         ))}
       </ul>
       <AddRestaurantForm addRestaurant={addRestaurant} />
@@ -40,4 +42,4 @@ const RestaurantList = () => {
   );
 };
 
-export default RestaurantList;
+export default Restaurants;
