@@ -12,7 +12,7 @@ class RestaurantCreate(BaseModel):
 
 class Restaurant(RestaurantCreate):
     id: str
-    owner_id: str
+    owner_id: Optional[str] = None
 
 class RestaurantUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=50)

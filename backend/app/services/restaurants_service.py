@@ -48,7 +48,7 @@ def search_restaurants(
     end = None if limit is None else start + limit
     return [Restaurant(**r) for r in restaurants[start:end]]
 
-def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaurant:
+def update_restaurant(restaurant_id: str, payload: RestaurantUpdate, owner_id: str) -> Restaurant:
     restaurants = load_all()
     for idx, r in enumerate(restaurants):
         if r.get("id") == restaurant_id:
@@ -57,17 +57,13 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate) -> Restaura
             final_tags: List[str] = payload.tags if payload.tags is not None else normalized_tags
             updated = Restaurant(
                 id=restaurant_id,
+                owner_id=owner_id,
                 name=payload.name.strip() if payload.name is not None else str(r.get("name")),
                 address=payload.address.strip() if payload.address is not None else str(r.get("address")),
                 description=payload.description.strip() if payload.description is not None else str(r.get("description")),
                 phone=payload.phone.strip() if payload.phone is not None else str(r.get("phone")),
                 rating=payload.rating if payload.rating is not None else r.get("rating"),
                 tags=final_tags,
-                estimated_delivery_time=(
-                    payload.estimated_delivery_time
-                    if payload.estimated_delivery_time is not None
-                    else r.get("estimated_delivery_time")
-                ),
             )
             restaurants[idx] = updated.model_dump()
             save_all(restaurants)
