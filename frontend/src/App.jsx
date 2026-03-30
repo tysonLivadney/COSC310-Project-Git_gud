@@ -4,14 +4,11 @@ import RestaurantList from './components/Restaurants/Restaurants';
 
 const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Food Delivery App</h1>
-      </header>
-      <main>
-        <RestaurantList />
-      </main>
-    </div>
+    <BrowserRouter>
+      <routes>
+        <Route path="/restaurants" element={<RestaurantList />} />
+      </routes>
+    </BrowserRouter>
   );
 };
 

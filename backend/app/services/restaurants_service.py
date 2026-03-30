@@ -7,20 +7,20 @@ from repositories.restaurants_repo import load_all, save_all
 def list_restaurants() -> List[Restaurant]:
     return [Restaurant(**r) for r in load_all()]
 
-def create_restaurant(payload: RestaurantCreate) -> Restaurant:
+def create_restaurant(payload: RestaurantCreate, owner_id: str) -> Restaurant:
     restaurants = load_all()
     new_id = str(uuid.uuid4())
     if any(r.get("id") == new_id for r in restaurants):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
     new_restaurant = Restaurant(
         id=new_id,
+        owner_id=owner_id,
         name=payload.name.strip(),
-        address=payload.address.strip(), 
+        address=payload.address.strip(),
         description=payload.description.strip(),
         phone=payload.phone.strip(),
         rating=payload.rating, 
         tags=payload.tags,
-        estimated_delivery_time=payload.estimated_delivery_time
         )
     restaurants.append(new_restaurant.model_dump())
     save_all(restaurants)

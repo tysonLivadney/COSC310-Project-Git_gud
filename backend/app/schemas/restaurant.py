@@ -9,10 +9,10 @@ class RestaurantCreate(BaseModel):
     phone: str = Field(..., pattern=r'^\+?[0-9]{7,15}$')
     rating: Optional[int] = Field(..., ge=0, le=5)
     tags: List[str] = Field(default=[], max_length=10)
-    estimated_delivery_time: Optional[int] = Field(..., gt=0)
 
 class Restaurant(RestaurantCreate):
     id: str
+    owner_id: str
 
 class RestaurantUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=50)
@@ -21,5 +21,5 @@ class RestaurantUpdate(BaseModel):
     phone: Optional[str] = Field(None, pattern=r'^\+?[0-9]{7,15}$')
     rating: Optional[int] = Field(None, ge=0, le=5)
     tags: Optional[List[str]] = Field(default=[], max_length=10)
-    estimated_delivery_time: Optional[int] = Field(None, gt=0)
+    owner_id: Optional[str] = None
     
