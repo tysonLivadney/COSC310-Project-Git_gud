@@ -1,13 +1,16 @@
 import React from 'react';
 import './App.css';
 import RestaurantList from './components/Restaurants/Restaurants';
+import Manager from './components/Manager/Manager';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 const App = () => {
   return (
     <BrowserRouter>
-      <routes>
+      <Routes>
         <Route path="/restaurants" element={<RestaurantList />} />
-      </routes>
+        <Route path="/" element={<Manager />} />
+      </Routes>
     </BrowserRouter>
   );
 };
