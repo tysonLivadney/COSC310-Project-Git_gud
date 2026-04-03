@@ -32,6 +32,24 @@ VALID_MENU_ITEM = {
     "in_stock": True
 }
 
+OWNER_USER = {
+    "name": "Test Owner",
+    "email": "owner@test.com",
+    "password": "password123",
+    "role": "owner"
+}
+
+def register_and_login(user_data):
+    client.post("/auth/register", json=user_data)
+    response = client.post("/auth/login", json={
+        "email": user_data["email"],
+        "password": user_data["password"],
+    })
+    return response.json()["token"]
+
+def _auth_header(token):
+    return {"Authorization": f"Bearer {token}"}
+
 @pytest.fixture(autouse=True)
 def save_and_restore():
     restaurants = load_restaurants()
@@ -47,7 +65,7 @@ def save_and_restore():
 
 @pytest.fixture
 def test_restaurant():
-    return client.post("/restaurants", json=VALID_RESTAURANT).json()
+    return client.post("/restaurants", json=VALID_RESTAURANT, headers=_auth_header(register_and_login(OWNER_USER))).json()
 
 @pytest.fixture
 def test_menu(test_restaurant):
@@ -56,3 +74,4 @@ def test_menu(test_restaurant):
 @pytest.fixture
 def test_menu_item(test_menu):
     return client.post("/menu-items", json={**VALID_MENU_ITEM, "menu_id": test_menu["id"]}).json()
+

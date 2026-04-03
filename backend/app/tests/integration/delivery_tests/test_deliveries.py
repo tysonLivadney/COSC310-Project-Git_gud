@@ -76,7 +76,6 @@ def test_get_delivery_not_found():
 
 
 
-
 def test_delete_delivery(test_delivery):
     response = client.delete(f"/deliveries/{test_delivery['id']}")
     assert response.status_code == 200
