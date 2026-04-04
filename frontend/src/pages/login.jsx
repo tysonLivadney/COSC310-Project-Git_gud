@@ -46,7 +46,11 @@ const Login = () => {
       login(data.token, data.user);
       navigate(ROLE_ROUTES[data.user.role] ?? '/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password.');
+      if (!err.response) {
+        setError('Cannot reach the server. Make sure the backend is running on port 8000.');
+      } else {
+        setError(err.response.data?.detail || 'Invalid email or password.');
+      }
     } finally {
       setLoading(false);
     }

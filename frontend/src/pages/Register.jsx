@@ -51,8 +51,12 @@ const Register = () => {
       await api.post('/auth/register', payload);
       navigate('/login');
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : 'Registration failed. Please try again.');
+      if (!err.response) {
+        setError('Cannot reach the server. Make sure the backend is running on port 8000.');
+      } else {
+        const detail = err.response.data?.detail;
+        setError(typeof detail === 'string' ? detail : `Registration failed (${err.response.status}). Please try again.`);
+      }
     } finally {
       setLoading(false);
     }
