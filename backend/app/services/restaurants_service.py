@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from schemas.restaurant import Restaurant, RestaurantCreate, RestaurantUpdate
 from repositories.restaurants_repo import load_all, save_all
+from datetime import datetime
 
 def list_restaurants() -> List[Restaurant]:
     return [Restaurant(**r) for r in load_all()]
@@ -21,6 +22,9 @@ def create_restaurant(payload: RestaurantCreate, owner_id: str) -> Restaurant:
         phone=payload.phone.strip(),
         rating=payload.rating, 
         tags=payload.tags,
+        opening_hours=payload.opening_hours,
+        closing_hours=payload.closing_hours,
+        max_prep_time_minutes=payload.max_prep_time_minutes 
         )
     restaurants.append(new_restaurant.model_dump())
     save_all(restaurants)
@@ -64,6 +68,9 @@ def update_restaurant(restaurant_id: str, payload: RestaurantUpdate, owner_id: s
                 phone=payload.phone.strip() if payload.phone is not None else str(r.get("phone")),
                 rating=payload.rating if payload.rating is not None else r.get("rating"),
                 tags=final_tags,
+                opening_hours=payload.opening_hours if payload.opening_hours is not None else r.get("opening_hours"),
+                closing_hours=payload.closing_hours if payload.closing_hours is not None else r.get("closing_hours"),
+                max_prep_time_minutes=payload.max_prep_time_minutes if payload.max_prep_time_minutes is not None else r.get("max_prep_time_minutes")
             )
             restaurants[idx] = updated.model_dump()
             save_all(restaurants)
@@ -77,4 +84,29 @@ def delete_restaurant(restaurant_id: str) -> None:
         raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_id}' not found")
     save_all(new_restaurants)
 
+def _get_current_day_index() -> int:
+    # Monday=0 -> Sunday=6
+    return datetime.now().weekday()
+
+def _is_open(self) -> bool:
+    day = _get_current_day_index()
+    open_time = self.opening_hours[day]
+    close_time = self.closing_hours[day]
+    if open_time in ("", "closed") or close_time in ("", "closed"):
+        return False
+    now = datetime.now().strftime("%H:%M")
+    return open_time <= now < close_time
+
+def _finishes_before_close(self) -> bool:
+    day = _get_current_day_index()
+    close_time = self.closing_hours[day]
+    if close_time in ("", "closed"):
+        return False
+    now = datetime.now().strftime("%H:%M")
+    return now < close_time
+
+def can_accept_order(self) -> bool:
+    return self._is_open() and self._finishes_before_close()
+
     
+        

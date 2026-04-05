@@ -11,7 +11,10 @@ VALID_RESTAURANT = {
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
-    "tags": ["italian", "pizza"]
+    "tags": ["italian", "pizza"],
+    "opening_hours": ["09:00", "09:00", "09:00", "09:00", "09:00", "09:00", "closed"],
+    "closing_hours": ["20:00", "20:00", "20:00", "20:00", "20:00", "17:00", "closed"],
+    "max_prep_time_minutes": 30
 }
 
 VALID_MENU = {
