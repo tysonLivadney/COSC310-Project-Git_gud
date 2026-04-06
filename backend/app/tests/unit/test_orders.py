@@ -218,3 +218,14 @@ def test_cannot_confirm_cancelled_order():
     client.delete(f"/orders/{order['id']}")
     response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 400
+
+def test_order_not_created_if_restaurant_closed():       
+    with patch("services.orders_service.can_accept_order", return_value=False):
+        response = client.post("/orders", json=SAMPLE_ORDER)
+    assert response.status_code == 400
+
+def test_order_not_confirmed_if_restaurant_closed():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    with patch("services.orders_service.can_accept_order", return_value=False):
+        response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    assert response.status_code == 400
