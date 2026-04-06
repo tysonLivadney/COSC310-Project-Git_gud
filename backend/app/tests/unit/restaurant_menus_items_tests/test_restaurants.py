@@ -19,7 +19,7 @@ VALID_RESTAURANT = {
 
 VALID_MENU = {
     "name": "Test Menu",
-    "description": "Test menu description that is long enough.",
+    "description": "Test menu description thAat is long enough.",
 }
 
 OWNER_USER = {

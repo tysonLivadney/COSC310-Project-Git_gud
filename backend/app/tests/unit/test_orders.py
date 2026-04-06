@@ -1,9 +1,17 @@
 from fastapi.testclient import TestClient
 from repositories.orders_repo import load_all as load_orders, save_all as save_orders
+from unittest.mock import patch, MagicMock
 import pytest
 from main import app
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def mock_restaurant_hours():
+    mock_restaurant = MagicMock()
+    with patch("services.orders_service.can_accept_order", return_value=True),\
+        patch("services.orders_service.get_restaurant_by_id", return_value=mock_restaurant):
+            yield
 
 TEST_PAYLOAD = {
     "payment_info": {

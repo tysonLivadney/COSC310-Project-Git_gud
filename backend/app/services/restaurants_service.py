@@ -88,25 +88,25 @@ def _get_current_day_index() -> int:
     # Monday=0 -> Sunday=6
     return datetime.now().weekday()
 
-def _is_open(self) -> bool:
+def _is_open(restaurant: Restaurant) -> bool:
     day = _get_current_day_index()
-    open_time = self.opening_hours[day]
-    close_time = self.closing_hours[day]
+    open_time = restaurant.opening_hours[day]
+    close_time = restaurant.closing_hours[day]
     if open_time in ("", "closed") or close_time in ("", "closed"):
         return False
     now = datetime.now().strftime("%H:%M")
     return open_time <= now < close_time
 
-def _finishes_before_close(self) -> bool:
+def _finishes_before_close(restaurant: Restaurant) -> bool:
     day = _get_current_day_index()
-    close_time = self.closing_hours[day]
+    close_time = restaurant.closing_hours[day]
     if close_time in ("", "closed"):
         return False
     now = datetime.now().strftime("%H:%M")
     return now < close_time
 
-def can_accept_order(self) -> bool:
-    return self._is_open() and self._finishes_before_close()
+def can_accept_order(restaurant: Restaurant) -> bool:
+    return _is_open(restaurant) and _finishes_before_close(restaurant)
 
     
         
