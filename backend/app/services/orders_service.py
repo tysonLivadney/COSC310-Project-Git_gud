@@ -128,6 +128,11 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     _require_draft(o, "confirmed")
 
     order = Order(**o)
+
+    restaurant = get_restaurant_by_id(order.restaurant_id)
+    if not can_accept_order(restaurant):
+        raise HTTPException(status_code=400, detail="Restaurant is closed or cannot complete order in time")
+
     pricing = _calculate_and_process_payment(order, order_id, payment_info)
 
     o["status"] = OrderStatus.CONFIRMED.value

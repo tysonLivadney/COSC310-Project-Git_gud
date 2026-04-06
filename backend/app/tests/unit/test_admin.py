@@ -1,3 +1,4 @@
+from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from repositories.orders_repo import load_all as load_orders, save_all as save_orders
 from repositories.users_repo import load_all as load_users, save_all as save_users
@@ -82,6 +83,12 @@ def user_token():
         "password": REGULAR_USER["password"],
     })
     return response.json()["token"]
+
+@pytest.fixture(autouse=True)
+def mock_restaurant_hours():
+    with patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()), \
+         patch("services.orders_service.can_accept_order", return_value=True):
+        yield
 
 
 def _auth_header(token):
