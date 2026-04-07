@@ -13,6 +13,7 @@ from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService
 from services.payment_service import PaymentService
 from services.restaurants_service import can_accept_order, get_restaurant_by_id
+from services.order_total_calculator import subtotal_from_order
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
