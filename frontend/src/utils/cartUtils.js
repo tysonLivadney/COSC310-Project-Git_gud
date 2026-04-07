@@ -44,7 +44,6 @@ export const clearCart = () => {
   localStorage.removeItem(CART_KEY);
 };
 
-export const getCartSubtotal = () => {
-  const cart = getCart();
-  return cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+export const getCartSubtotal = (cart) => {
+  return cart.reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0);
 };
