@@ -5,6 +5,9 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import SuccessPage from "./pages/SuccessPage";
+import FailurePage from "./pages/FailurePage";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 const App = () => {
@@ -17,6 +20,9 @@ const App = () => {
         <Route path="/manager" element={<ManagerDashboard />} />
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/payment-failed" element={<FailurePage />} />
       </Routes>
     </BrowserRouter>
   );

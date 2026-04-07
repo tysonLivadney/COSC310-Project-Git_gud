@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CartItem from "../components/Restaurants/cart/CartItem.jsx";
-import {
-  getCart,
-  removeFromCart,
-  updateQuantity,
-  getCartSubtotal,
-} from "../utils/cartUtils.js";
+import { getCart, removeFromCart, updateQuantity, getCartSubtotal } from "../utils/cartUtils.js";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
