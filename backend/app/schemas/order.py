@@ -12,7 +12,6 @@ class OrderStatus(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     REFUNDED = "refunded"
-    REJECTED = "rejected"
 
 
 class OrderItem(BaseModel):
@@ -47,13 +46,10 @@ class Order(BaseModel):
     confirmed_at: Optional[str] = None
     cancelled_at: Optional[str] = None
     refunded_at: Optional[str] = None
-    rejected_at: Optional[str] = None
-    rejection_reason: Optional[str] = None
+    refund_amount: Optional[str] = None
     @field_validator("restaurant_id", mode="before")
     @classmethod
     def coerce_restaurant_id_to_str(cls, v):
         return str(v)
     delivery_address: Optional[str] = None
 
-class OrderRejectRequest(BaseModel):
-    reason: str
