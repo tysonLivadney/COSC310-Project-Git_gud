@@ -1,12 +1,11 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from fastapi import HTTPException
 from services.auth_service import register_user, build_user_response
 from services.delivery_service import create_delivery
 from services.orders_service import create_order, update_order
 from schemas.auth import RegisterRequest, Role
 from schemas.order import OrderCreate, OrderUpdate, OrderItem
-
 
 
 def test_register_user_stores_address():
@@ -69,7 +68,9 @@ def test_create_order_with_explicit_delivery_address():
         delivery_address="456 Elm St",
     )
     with patch("services.orders_service.load_all", return_value=[]), \
-         patch("services.orders_service.save_all"):
+         patch("services.orders_service.save_all"), \
+            patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()), \
+                patch("services.orders_service.can_accept_order", return_value=True):
         result = create_order(payload)
     assert result.delivery_address == "456 Elm St"
 
@@ -83,7 +84,9 @@ def test_create_order_falls_back_to_user_address():
     mock_users = [{"id": "cust2", "address": "789 Oak Ave"}]
     with patch("services.orders_service.load_all", return_value=[]), \
          patch("services.orders_service.save_all"), \
-         patch("services.address_resolver.load_all_users", return_value=mock_users):
+         patch("services.address_resolver.load_all_users", return_value=mock_users), \
+            patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()), \
+                patch("services.orders_service.can_accept_order", return_value=True):
         result = create_order(payload)
     assert result.delivery_address == "789 Oak Ave"
 
@@ -97,7 +100,9 @@ def test_create_order_no_address_anywhere():
     mock_users = [{"id": "cust3"}]
     with patch("services.orders_service.load_all", return_value=[]), \
          patch("services.orders_service.save_all"), \
-         patch("services.address_resolver.load_all_users", return_value=mock_users):
+         patch("services.address_resolver.load_all_users", return_value=mock_users), \
+            patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()), \
+                patch("services.orders_service.can_accept_order", return_value=True):
         result = create_order(payload)
     assert result.delivery_address is None
 
@@ -116,7 +121,8 @@ def test_update_order_preserves_delivery_address():
         items=[OrderItem(food_item="Pasta", quantity=2, unit_price=11.50)],
     )
     with patch("services.orders_service.load_all", return_value=[existing_order]), \
-         patch("services.orders_service.save_all"):
+         patch("services.orders_service.save_all"), \
+            patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()):
         result = update_order("order1", payload)
     assert result.delivery_address == "123 Keep St"
 
@@ -143,7 +149,8 @@ def test_create_delivery_explicit_addresses_not_overridden():
     mock_orders = [{"id": "order1", "delivery_address": "456 Dropoff Ave", "restaurant_id": "1"}]
     mock_restaurants = [{"id": "1", "address": "123 Pickup St"}]
     with patch("services.address_resolver.load_all_orders", return_value=mock_orders), \
-         patch("services.address_resolver.load_all_restaurants", return_value=mock_restaurants):
+         patch("services.address_resolver.load_all_restaurants", return_value=mock_restaurants), \
+            patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()):
         result = create_delivery("order1", pickup_address="Custom Pickup", dropoff_address="Custom Dropoff")
     assert result.pickup_address == "Custom Pickup"
     assert result.dropoff_address == "Custom Dropoff"
