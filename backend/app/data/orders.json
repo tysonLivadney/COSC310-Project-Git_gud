@@ -580,11 +580,8 @@
       }
     ],
     "status": "confirmed",
-    "created_at": "2026-04-07T23:40:50.788029+00:00",
-    "confirmed_at": "2026-04-07T23:40:50.796207+00:00",
-    "cancelled_at": null,
-    "refunded_at": null,
-    "refund_amount": null,
+    "created_at": "2026-04-06T18:04:20.170772+00:00",
+    "confirmed_at": "2026-04-06T18:04:20.207061+00:00",
     "delivery_address": null,
     "subtotal": "25.00",
     "tax": "3.17",

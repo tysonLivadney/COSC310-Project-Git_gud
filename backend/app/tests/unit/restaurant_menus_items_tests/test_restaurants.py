@@ -1,3 +1,6 @@
+from unittest.mock import MagicMock, patch
+from schemas.restaurant import Restaurant
+from services.restaurants_service import _is_open, can_accept_order
 from fastapi.testclient import TestClient
 from main import app
 from services.auth_dependencies import get_current_user
@@ -11,12 +14,15 @@ VALID_RESTAURANT = {
     "description": "Example of a description.",
     "phone": "+123456789",
     "rating": 5,
-    "tags": ["italian", "pizza"]
+    "tags": ["italian", "pizza"],
+    "opening_hours": ["09:00", "09:00", "09:00", "09:00", "09:00", "09:00", "closed"],
+    "closing_hours": ["20:00", "20:00", "20:00", "20:00", "20:00", "17:00", "closed"],
+    "max_prep_time_minutes": 30
 }
 
 VALID_MENU = {
     "name": "Test Menu",
-    "description": "Test menu description that is long enough.",
+    "description": "Test menu description thAat is long enough.",
 }
 
 OWNER_USER = {
@@ -228,3 +234,85 @@ def test_filtered_pagination():
     response = client.get("/restaurants/search?name=restaurant&limit=2&offset=9")
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+#Restaurant hours tests
+def test_is_open_during_hours(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "12:00"
+    mock_now.weekday.return_value = 0
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == True
+
+def test_is_closed_outside_of_hours(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "24:00"
+    mock_now.weekday.return_value = 0
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == False
+
+def test_is_closed_when_closed(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "12:00"
+    mock_now.weekday.return_value = 6
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == False
+
+def test_finished_before_close(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "19:00"
+    mock_now.weekday.return_value = 0
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == True
+
+def test_finished_before_close_cutoff(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "19:30"
+    mock_now.weekday.return_value = 0
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == True
+
+def test_finished_before_close_after_cutoff(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "19:45"
+    mock_now.weekday.return_value = 0
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == True
+
+def test_finished_before_close_when_closed(test_restaurant):
+    restaurant = test_restaurant
+    mock_now = MagicMock()
+    mock_now.strftime.return_value = "19:00"
+    mock_now.weekday.return_value = 6
+    with patch("services.restaurants_service.datetime", mock_now) as mock_datetime:
+        mock_datetime.now.return_value = mock_now
+        assert _is_open(Restaurant(**restaurant)) == False
+
+def test_can_accept_order_when_open(test_restaurant):
+    restaurant = Restaurant(**test_restaurant)
+    with patch("services.restaurants_service._is_open", return_value=True), \
+         patch("services.restaurants_service._finishes_before_close", return_value=True):
+        assert can_accept_order(restaurant) is True
+
+def test_can_accept_order_when_closed(test_restaurant):
+    restaurant = Restaurant(**test_restaurant)
+    with patch("services.restaurants_service._is_open", return_value=False), \
+         patch("services.restaurants_service._finishes_before_close", return_value=True):
+        assert can_accept_order(restaurant) is False
+
+def test_can_accept_order_when_finishes_after_close(test_restaurant):
+    restaurant = Restaurant(**test_restaurant)
+    with patch("services.restaurants_service._is_open", return_value=True), \
+         patch("services.restaurants_service._finishes_before_close", return_value=False):
+        assert can_accept_order(restaurant) is False

@@ -12,8 +12,7 @@ from services.address_resolver import resolve_customer_address
 from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService
 from services.payment_service import PaymentService
-from services.order_total_calculator import subtotal_from_order
-
+from services.restaurants_service import can_accept_order, get_restaurant_by_id
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
@@ -46,6 +45,12 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+
+    restaurant = get_restaurant_by_id(payload.restaurant_id)
+    if restaurant is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    if not can_accept_order(restaurant):
+        raise HTTPException(status_code=400, detail="Restaurant is closed or cannot complete order in time")
 
     delivery_address = resolve_customer_address(payload.customer_id, payload.delivery_address)
 
@@ -123,6 +128,11 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     _require_draft(o, "confirmed")
 
     order = Order(**o)
+
+    restaurant = get_restaurant_by_id(order.restaurant_id)
+    if not can_accept_order(restaurant):
+        raise HTTPException(status_code=400, detail="Restaurant is closed or cannot complete order in time")
+
     pricing = _calculate_and_process_payment(order, order_id, payment_info)
 
     o["status"] = OrderStatus.CONFIRMED.value
