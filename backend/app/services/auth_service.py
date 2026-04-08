@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from repositories.users_repo import load_all as load_all_users
+from repositories.drivers_repo import load_all as load_all_drivers                              
+from repositories.drivers_repo import save_all as save_all_drivers 
 from repositories.users_repo import save_all as save_all_users
-from repositories.drivers_repo import load_all as load_all_drivers
-from repositories.drivers_repo import save_all as save_all_drivers
 from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, UserResponse
 from services.password_service import generate_salt, hash_password, verify_password
 from services.session_service import create_session
