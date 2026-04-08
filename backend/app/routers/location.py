@@ -79,7 +79,7 @@ def calculate_distance(request: DistanceRequest):
     return {"distance_km": round(distance, 2)}
 
 @router.get("/users/{user_id}/restaurants/{restaurant_id}/distance")
-def get_user_to_restaurant_distance(user_id: str, restaurant_id: str):
+def get_user_to_restaurant_distance(user_id: int, restaurant_id: int):
     distance = location_service.get_distance_user_to_restaurant(user_id, restaurant_id)
     if distance is None:
         raise HTTPException(status_code=404, detail="User or restaurant location not found")
