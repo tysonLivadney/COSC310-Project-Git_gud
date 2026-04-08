@@ -14,11 +14,21 @@ const CustomerDashboard = () => {
   useEffect(() => {
     const fetchDeliveries = async () => {
       try {
-        const response = await api.get('/deliveries/');
-        // Filter deliveries by current user's ID
-        const userDeliveries = response.data.filter(
-          delivery => delivery.customer_id === user?.id
+        // First, get user's orders
+        const ordersResponse = await api.get('/orders/');
+        const userOrders = ordersResponse.data.filter(
+          order => order.customer_id === user?.id
         );
+        
+        // Get the order IDs
+        const userOrderIds = userOrders.map(order => order.id);
+        
+        // Then get deliveries and filter by order_id
+        const deliveriesResponse = await api.get('/deliveries/');
+        const userDeliveries = deliveriesResponse.data.filter(
+          delivery => userOrderIds.includes(delivery.order_id)
+        );
+        
         setDeliveries(userDeliveries);
       } catch (err) {
         console.error("Failed to fetch deliveries", err);
@@ -26,7 +36,10 @@ const CustomerDashboard = () => {
         setLoading(false);
       }
     };
-    fetchDeliveries();
+    
+    if (user?.id) {
+      fetchDeliveries();
+    }
   }, [user?.id]);
 
   return (
