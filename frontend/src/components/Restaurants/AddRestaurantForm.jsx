@@ -11,8 +11,8 @@ const AddRestaurantForm = ({ onSubmit, restaurantToEdit = null, onCancel }) => {
     rating: 0,
     tags: '',
     max_prep_time_minutes: 30,
-    opening_hours: Array(7).fill("09:00"),
-    closing_hours: Array(7).fill("22:00")
+    opening_hours: Array(7).fill(""),
+    closing_hours: Array(7).fill("")
   };
 
   const [formData, setFormData] = useState(initialFormState);
