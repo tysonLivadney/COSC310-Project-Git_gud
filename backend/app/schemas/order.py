@@ -5,6 +5,7 @@ from schemas.payment import PaymentInfo
 
 class OrderConfirmRequest(BaseModel):
     payment_info: PaymentInfo
+    promo_code: Optional[str] = None
 
 class OrderStatus(str, Enum):
     DRAFT = "draft"
@@ -52,4 +53,5 @@ class Order(BaseModel):
     def coerce_restaurant_id_to_str(cls, v):
         return str(v)
     delivery_address: Optional[str] = None
-
+    promo_code: Optional[str] = None
+    discount: Optional[str] = None
