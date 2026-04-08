@@ -7,6 +7,7 @@ from repositories.delivery_repo import load_all, save_all
 from repositories.drivers_repo import load_all as load_all_drivers, save_all as save_all_drivers
 from services import notifications_service
 from services.address_resolver import resolve_delivery_addresses
+from services.orders_service import complete_order
 from uuid import uuid4
 
 
@@ -134,6 +135,10 @@ def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery.status = DeliveryStatus.DELIVERED
     delivery.updated_at = datetime.now()
     _update(delivery)
+    try:
+        complete_order(delivery.order_id)
+    except HTTPException:
+        pass
     notifications_service.notify(delivery, NotificationType.DELIVERY_COMPLETED)
     return delivery
 
