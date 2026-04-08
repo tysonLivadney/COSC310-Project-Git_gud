@@ -1,9 +1,17 @@
 from fastapi.testclient import TestClient
 from repositories.orders_repo import load_all as load_orders, save_all as save_orders
+from unittest.mock import patch, MagicMock
 import pytest
 from main import app
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def mock_restaurant_hours():
+    mock_restaurant = MagicMock()
+    with patch("services.orders_service.can_accept_order", return_value=True),\
+        patch("services.orders_service.get_restaurant_by_id", return_value=mock_restaurant):
+            yield
 
 TEST_PAYLOAD = {
     "payment_info": {
@@ -67,6 +75,65 @@ def test_create_order_missing_fields():
     response = client.post("/orders", json={"restaurant_id": "1"})
     assert response.status_code == 422
 
+def test_cancel_confirmed_order_triggers_refund():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "refunded"
+    assert data["refunded_at"] is not None
+    assert data["refund_amount"] is not None
+
+def test_cancel_draft_order_no_refund():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "cancelled"
+    assert data["refund_amount"] is None
+    assert data["refunded_at"] is None
+
+def test_refund_amount_matches_subtotal():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    data = response.json()
+    assert data["refund_amount"] == "20.00"
+
+def test_refund_amount_multiple_items():
+    order = client.post("/orders", json={
+        "restaurant_id": "1",
+        "customer_id": "customer-1",
+        "delivery_address": "123 Test St",
+        "items": [
+            {"food_item": "Burger", "quantity": 2, "unit_price": 10.00},
+            {"food_item": "Fries", "quantity": 3, "unit_price": 5.00},
+        ],
+    }).json()
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    data = response.json()
+    assert data["refund_amount"] == "35.00"
+
+def test_cancelled_confirmed_order_has_cancelled_at():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    client.delete(f"/orders/{order['id']}")
+    response = client.get(f"/orders/{order['id']}")
+    data = response.json()
+    assert data["cancelled_at"] is not None
+
+def test_cannot_cancel_refunded_order():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    client.delete(f"/orders/{order['id']}")
+    response = client.delete(f"/orders/{order['id']}")
+    assert response.status_code == 400
 
 #GET /orders tests
 def test_list_orders_empty():
@@ -241,12 +308,11 @@ def test_cancelled_order_status():
     assert response.status_code == 200
     assert response.json()["status"] == "cancelled"
 
-
-def test_cancel_confirmed_order_fails():
+def test_cancel_confirmed_order():
     order = client.post("/orders", json=SAMPLE_ORDER).json()
     client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     response = client.delete(f"/orders/{order['id']}")
-    assert response.status_code == 400
+    assert response.status_code == 204
 
 
 def test_cancel_nonexistent_order():
@@ -268,3 +334,13 @@ def test_cannot_confirm_cancelled_order():
     response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 400
 
+def test_order_not_created_if_restaurant_closed():       
+    with patch("services.orders_service.can_accept_order", return_value=False):
+        response = client.post("/orders", json=SAMPLE_ORDER)
+    assert response.status_code == 400
+
+def test_order_not_confirmed_if_restaurant_closed():
+    order = client.post("/orders", json=SAMPLE_ORDER).json()
+    with patch("services.orders_service.can_accept_order", return_value=False):
+        response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    assert response.status_code == 400

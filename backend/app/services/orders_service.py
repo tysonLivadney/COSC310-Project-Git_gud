@@ -10,10 +10,9 @@ from schemas.payment import PaymentInfo, PaymentProcessRequest
 from repositories.orders_repo import load_all, save_all
 from services.address_resolver import resolve_customer_address
 from services.location_service import LocationService
-from services.order_total_calculator import OrderTotalService
+from services.order_total_calculator import OrderTotalService, subtotal_from_order
 from services.payment_service import PaymentService
-from services.menu_items_service import get_menu_items_by_restaurant_id
-
+from services.restaurants_service import can_accept_order, get_restaurant_by_id
 
 
 def validate_user_state(payload: OrderCreate) -> None:
@@ -25,14 +24,15 @@ def validate_user_state(payload: OrderCreate) -> None:
                 status_code=400,
                 detail="Guest checkout requires a delivery address."
             )
-        
+
+
 def validate_order_before_confirm(order: Order) -> None:
     if not order.items:
         raise HTTPException(status_code=400, detail="Order must contain at least one item.")
     if not order.delivery_address or not order.delivery_address.strip():
         raise HTTPException(status_code=400, detail="Delivery address is required before checkout.")
 
-        
+
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
     orders = load_all()
     for idx, o in enumerate(orders):
@@ -63,7 +63,18 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+
     validate_user_state(payload)
+
+    restaurant = get_restaurant_by_id(payload.restaurant_id)
+    if restaurant is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    if not can_accept_order(restaurant):
+        raise HTTPException(
+            status_code=400,
+            detail="Restaurant is closed or cannot complete order in time"
+        )
+
     delivery_address = resolve_customer_address(payload.customer_id, payload.delivery_address)
 
     new_order = Order(
@@ -129,9 +140,12 @@ def _calculate_and_process_payment(order, order_id, payment_info):
     return {
         "payment": payment_result,
         "distance_km": float(distance_km),
-        "subtotal": subtotal, "tax_rate": tax_rate,
-        "tax": tax, "delivery_fee": delivery_fee,
-        "total": total, "province": province,
+        "subtotal": subtotal,
+        "tax_rate": tax_rate,
+        "tax": tax,
+        "delivery_fee": delivery_fee,
+        "total": total,
+        "province": province,
     }
 
 
@@ -141,6 +155,16 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
 
     order = Order(**o)
     validate_order_before_confirm(order)
+
+    restaurant = get_restaurant_by_id(order.restaurant_id)
+    if restaurant is None:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    if not can_accept_order(restaurant):
+        raise HTTPException(
+            status_code=400,
+            detail="Restaurant is closed or cannot complete order in time"
+        )
+
     pricing = _calculate_and_process_payment(order, order_id, payment_info)
 
     o["status"] = OrderStatus.CONFIRMED.value
@@ -161,18 +185,46 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
 
 
 def cancel_order(order_id: str) -> None:
-    idx, o, orders = _find_order(order_id)
-    _require_draft(o, "cancelled")
+    orders = load_all()
 
-    cancelled = Order(
-        id=order_id,
-        restaurant_id=o["restaurant_id"],
-        customer_id=o["customer_id"],
-        items=[item for item in o["items"]],
-        delivery_address=o.get("delivery_address"),
-        status=OrderStatus.CANCELLED,
-        created_at=o["created_at"],
-    )
-    orders[idx] = cancelled.model_dump()
-    save_all(orders)
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+            if o.get("status") not in [OrderStatus.DRAFT.value, OrderStatus.CONFIRMED.value]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only draft or confirmed orders can be cancelled.",
+                )
 
+            o["status"] = OrderStatus.CANCELLED.value
+            o["cancelled_at"] = datetime.now(timezone.utc).isoformat()
+            orders[idx] = o
+            save_all(orders)
+
+            if o.get("confirmed_at"):
+                refund_order(order_id)
+
+            return
+
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+
+def refund_order(order_id: str) -> Order:
+    orders = load_all()
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+            if o.get("status") != OrderStatus.CANCELLED.value:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only cancelled orders can be refunded.",
+                )
+
+            order = Order(**o)
+            refund_amount = subtotal_from_order(order)
+            o["status"] = OrderStatus.REFUNDED.value
+            o["refunded_at"] = datetime.now(timezone.utc).isoformat()
+            o["refund_amount"] = str(refund_amount)
+            orders[idx] = o
+            save_all(orders)
+            return Order(**o)
+
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")

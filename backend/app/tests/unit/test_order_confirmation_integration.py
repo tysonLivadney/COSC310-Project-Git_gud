@@ -1,7 +1,15 @@
+from unittest.mock import MagicMock, patch
+import pytest
 from fastapi.testclient import TestClient
 from main import app
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def mock_restaurant_hours():
+    with patch("services.orders_service.get_restaurant_by_id", return_value=MagicMock()), \
+         patch("services.orders_service.can_accept_order", return_value=True):
+        yield
 
 def test_confirm_order_integration_success():
     order_payload = {
