@@ -7,6 +7,7 @@ def test_confirm_order_integration_success():
     order_payload = {
         "restaurant_id": "rest-123",
         "customer_id": "cust-123",
+        "delivery_address": "123 Test St",
         "items": [
             {
                 "food_item": "Burger",

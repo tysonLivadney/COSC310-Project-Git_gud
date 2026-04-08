@@ -16,15 +16,16 @@ TEST_PAYLOAD = {
 SAMPLE_ORDER = {
     "restaurant_id": "1",
     "customer_id": "customer-1",
+    "delivery_address": "123 Test St",
     "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
 }
 
 SAMPLE_ORDER_2 = {
     "restaurant_id": "2",
     "customer_id": "customer-2",
+    "delivery_address": "456 Test Ave",
     "items": [{"food_item": "Pizza", "quantity": 1, "unit_price": 15.00}],
 }
-
 
 @pytest.fixture(autouse=True)
 def save_and_restore():
@@ -169,6 +170,62 @@ def test_confirm_nonexistent_order():
     response = client.post("/orders/fake-id/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 404
 
+def test_guest_order_requires_delivery_address():
+    guest_order = {
+        "restaurant_id": "1",
+        "customer_id": "guest-123",
+        "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
+    }
+    response = client.post("/orders", json=guest_order)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Guest checkout requires a delivery address."
+
+
+def test_guest_order_with_delivery_address_succeeds():
+    guest_order = {
+        "restaurant_id": "1",
+        "customer_id": "guest-123",
+        "delivery_address": "123 Test St",
+        "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
+    }
+    response = client.post("/orders", json=guest_order)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["customer_id"] == "guest-123"
+    assert data["delivery_address"] == "123 Test St"
+    assert data["status"] == "draft"
+
+
+def test_confirm_order_requires_delivery_address():
+    order_payload = {
+        "restaurant_id": "1",
+        "customer_id": "customer-1",
+        "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
+    }
+    order_response = client.post("/orders", json=order_payload)
+    assert order_response.status_code == 201
+    order = order_response.json()
+    response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Delivery address is required before checkout."
+
+def test_confirm_order_with_delivery_address_succeeds():
+    order_payload = {
+        "restaurant_id": "1",
+        "customer_id": "customer-1",
+        "delivery_address": "123 Test St",
+        "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
+    }
+    order_response = client.post("/orders", json=order_payload)
+    assert order_response.status_code == 201
+    order = order_response.json()
+    response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["order_id"] == order["id"]
+    assert data["status"] == "confirmed"
+    assert data["confirmed_at"] is not None
+
 
 #DELETE /orders/{id} tests
 def test_cancel_draft_order():
@@ -210,3 +267,4 @@ def test_cannot_confirm_cancelled_order():
     client.delete(f"/orders/{order['id']}")
     response = client.post(f"/orders/{order['id']}/confirm", json=TEST_PAYLOAD)
     assert response.status_code == 400
+

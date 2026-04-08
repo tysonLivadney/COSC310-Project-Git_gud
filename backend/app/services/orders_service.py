@@ -12,8 +12,27 @@ from services.address_resolver import resolve_customer_address
 from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService
 from services.payment_service import PaymentService
+from services.menu_items_service import get_menu_items_by_restaurant_id
 
 
+
+def validate_user_state(payload: OrderCreate) -> None:
+    customer_id = payload.customer_id.strip()
+
+    if customer_id.startswith("guest-"):
+        if not payload.delivery_address or not payload.delivery_address.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Guest checkout requires a delivery address."
+            )
+        
+def validate_order_before_confirm(order: Order) -> None:
+    if not order.items:
+        raise HTTPException(status_code=400, detail="Order must contain at least one item.")
+    if not order.delivery_address or not order.delivery_address.strip():
+        raise HTTPException(status_code=400, detail="Delivery address is required before checkout.")
+
+        
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
     orders = load_all()
     for idx, o in enumerate(orders):
@@ -44,7 +63,7 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-
+    validate_user_state(payload)
     delivery_address = resolve_customer_address(payload.customer_id, payload.delivery_address)
 
     new_order = Order(
@@ -121,6 +140,7 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     _require_draft(o, "confirmed")
 
     order = Order(**o)
+    validate_order_before_confirm(order)
     pricing = _calculate_and_process_payment(order, order_id, payment_info)
 
     o["status"] = OrderStatus.CONFIRMED.value
@@ -129,7 +149,6 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     o["tax"] = str(pricing["tax"])
     o["delivery_fee"] = str(pricing["delivery_fee"])
     o["total"] = str(pricing["total"])
-
     orders[idx] = o
     save_all(orders)
 
@@ -156,3 +175,4 @@ def cancel_order(order_id: str) -> None:
     )
     orders[idx] = cancelled.model_dump()
     save_all(orders)
+
