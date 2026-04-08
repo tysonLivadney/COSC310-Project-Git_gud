@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from repositories.users_repo import load_all as load_all_users
 from repositories.users_repo import save_all as save_all_users
+from repositories.drivers_repo import load_all as load_all_drivers
+from repositories.drivers_repo import save_all as save_all_drivers
 from schemas.auth import LoginRequest, LoginResponse, RegisterRequest, UserResponse
 from services.password_service import generate_salt, hash_password, verify_password
 from services.session_service import create_session
@@ -54,6 +56,19 @@ def register_user(payload: RegisterRequest) -> UserResponse:
     }
     users.append(user)
     save_all_users(users)
+
+    if payload.role == "driver":
+        drivers = load_all_drivers()
+        drivers.append({
+            "user_id": user["id"],
+            "name": user["name"],
+            "phone": "",
+            "vehicle_type": "",
+            "license_plate": "",
+            "available": True,
+        })
+        save_all_drivers(drivers)
+
     return build_user_response(user)
 
 
