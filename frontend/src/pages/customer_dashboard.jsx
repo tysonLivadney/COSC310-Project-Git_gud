@@ -13,7 +13,11 @@ const CustomerDashboard = () => {
     const fetchDeliveries = async () => {
       try {
         const response = await api.get('/deliveries/');
-        setDeliveries(response.data);
+        // Filter deliveries by current user's ID
+        const userDeliveries = response.data.filter(
+          delivery => delivery.customer_id === user?.id
+        );
+        setDeliveries(userDeliveries);
       } catch (err) {
         console.error("Failed to fetch deliveries", err);
       } finally {
@@ -21,7 +25,7 @@ const CustomerDashboard = () => {
       }
     };
     fetchDeliveries();
-  }, []);
+  }, [user?.id]);
 
   return (
     <div style={containerStyle}>
