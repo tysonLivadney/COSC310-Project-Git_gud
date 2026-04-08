@@ -69,6 +69,7 @@ def create_order(payload: OrderCreate) -> Order:
     restaurant = get_restaurant_by_id(payload.restaurant_id)
     if restaurant is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+    
     if not can_accept_order(restaurant):
         raise HTTPException(
             status_code=400,
@@ -156,15 +157,8 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     order = Order(**o)
     validate_order_before_confirm(order)
 
-    restaurant = get_restaurant_by_id(order.restaurant_id)
-    if restaurant is None:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-    if not can_accept_order(restaurant):
-        raise HTTPException(
-            status_code=400,
-            detail="Restaurant is closed or cannot complete order in time"
-        )
-
+    get_restaurant_by_id(order.restaurant_id)
+    
     pricing = _calculate_and_process_payment(order, order_id, payment_info)
 
     o["status"] = OrderStatus.CONFIRMED.value

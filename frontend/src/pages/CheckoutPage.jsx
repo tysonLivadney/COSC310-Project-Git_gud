@@ -12,6 +12,7 @@ const CheckoutPage = () => {
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [isGuest, setIsGuest] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,32 +24,30 @@ const CheckoutPage = () => {
     if (!token) {
       setCurrentUser(null);
       setIsGuest(true);
+      setAuthChecking(false);
       return;
     }
 
     try {
-      const response = await api.fetch("http://localhost:8000/auth/me", {
+      const response = await api.get("/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        setCurrentUser(null);
-        setIsGuest(true);
-        return;
-      }
-
-      const data = await response.json();
+      const data = response.data;
       setCurrentUser(data);
       setIsGuest(false);
 
-      if (data.address) {
+      if (data?.address) {
         setDeliveryAddress(data.address);
       }
-    } catch {
+    } catch (err) {
+      console.error("detectUserState failed:", err);
       setCurrentUser(null);
       setIsGuest(true);
+    } finally {
+      setAuthChecking(false);
     }
   };
 
@@ -97,35 +96,24 @@ const CheckoutPage = () => {
         })),
       };
 
-      const orderResponse = await fetch("http://localhost:8000/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderPayload),
-      });
-
-      const orderData = await orderResponse.json().catch(() => null);
-
-      if (!orderResponse.ok) {
-        throw new Error(orderData?.detail || "Failed to create order.");
-      }
+      const orderResponse = await api.post("/orders", orderPayload);
+      const orderData = orderResponse.data;
 
       setOrder(orderData);
 
-      const totalResponse = await fetch(
-        `http://localhost:8000/orders/${orderData.id}/total?province=BC&distance_km=1`
-      );
+      const totalResponse = await api.get(`/orders/${orderData.id}/total`, {
+        params: {
+          province: "BC",
+          distance_km: 1,
+        },
+      });
 
-      const totalData = await totalResponse.json().catch(() => null);
-
-      if (!totalResponse.ok) {
-        throw new Error(totalData?.detail || "Failed to load order total.");
-      }
-
-      setOrderTotal(totalData);
+      setOrderTotal(totalResponse.data);
     } catch (err) {
-      setError(err.message || "Could not prepare checkout.");
+      console.error("prepare checkout failed:", err);
+      setError(
+        err?.response?.data?.detail || err.message || "Could not prepare checkout."
+      );
     } finally {
       setLoading(false);
     }
@@ -138,42 +126,11 @@ const CheckoutPage = () => {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `http://localhost:8000/orders/${order.id}/confirm`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ payment_info: paymentInfo }),
-        }
-      );
+      const response = await api.post(`/orders/${order.id}/confirm`, {
+        payment_info: paymentInfo,
+      });
 
-      const result = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        let apiMessage = "Payment failed or order confirmation failed.";
-
-        if (Array.isArray(result?.detail) && result.detail.length > 0) {
-          const item = result.detail[0];
-          const field = item?.loc?.[item.loc.length - 1];
-
-          if (field === "expiry") {
-            apiMessage = "Expiry should have 5 characters";
-          } else if (field === "cvv") {
-            apiMessage = "CVV should have 3 or 4 characters";
-          } else if (field === "card_number") {
-            apiMessage = "Card number should have 13 to 19 digits";
-          } else if (typeof item?.msg === "string") {
-            apiMessage = item.msg;
-          }
-        } else if (typeof result?.detail === "string") {
-          apiMessage = result.detail;
-        }
-
-        setError(apiMessage);
-        return;
-      }
+      const result = response.data;
 
       clearCart();
 
@@ -184,8 +141,30 @@ const CheckoutPage = () => {
           status: result?.status || "confirmed",
         },
       });
-    } catch {
-      setError("Could not connect to server.");
+    } catch (err) {
+      console.error("confirm order failed:", err);
+
+      const result = err?.response?.data;
+      let apiMessage = "Payment failed or order confirmation failed.";
+
+      if (Array.isArray(result?.detail) && result.detail.length > 0) {
+        const item = result.detail[0];
+        const field = item?.loc?.[item.loc.length - 1];
+
+        if (field === "expiry") {
+          apiMessage = "Expiry should have 5 characters";
+        } else if (field === "cvv") {
+          apiMessage = "CVV should have 3 or 4 characters";
+        } else if (field === "card_number") {
+          apiMessage = "Card number should have 13 to 19 digits";
+        } else if (typeof item?.msg === "string") {
+          apiMessage = item.msg;
+        }
+      } else if (typeof result?.detail === "string") {
+        apiMessage = result.detail;
+      }
+
+      setError(apiMessage);
     } finally {
       setLoading(false);
     }
@@ -195,7 +174,11 @@ const CheckoutPage = () => {
     <div>
       <h2>Checkout</h2>
 
-      {isGuest ? (
+      {authChecking ? (
+        <div>
+          <p>Checking your account...</p>
+        </div>
+      ) : isGuest ? (
         <div>
           <p><strong>Guest Checkout</strong></p>
           <p>
@@ -229,7 +212,7 @@ const CheckoutPage = () => {
                 placeholder="Enter your delivery address"
               />
 
-              <button onClick={handlePrepareCheckout} disabled={loading}>
+              <button onClick={handlePrepareCheckout} disabled={loading || authChecking}>
                 {loading ? "Preparing..." : "Prepare Checkout"}
               </button>
             </div>

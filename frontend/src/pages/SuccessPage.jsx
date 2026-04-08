@@ -11,7 +11,7 @@ const SuccessPage = () => {
       <p>Order ID: {orderId}</p>
       <p>Status: {status}</p>
       <p>Total: ${Number(total || 0).toFixed(2)}</p>
-      <Link to="/">Back to Home</Link>
+      <Link to="/customer-dashboard">Back to Home</Link>
     </div>
   );
 };
