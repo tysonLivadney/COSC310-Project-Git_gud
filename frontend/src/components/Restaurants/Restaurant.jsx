@@ -19,8 +19,8 @@ const Restaurant = ({
           <p style={{ color: '#aaa', fontSize: '0.9rem' }}>{restaurant.address}</p>
         </div>
         <div>
-          <button onClick={() => onEdit(restaurant)} style={{ marginRight: '10px' }}>Edit</button>
-          <button onClick={onDelete} style={{ color: '#ff4444', border: '1px solid #ff4444', background: 'transparent' }}>Delete Restaurant</button>
+          <button onClick={() => onEdit?.(restaurant)} style={{ marginRight: '10px' }}>Edit</button>
+          <button onClick={onDelete} style={{ color: '#ff4444' }}>Delete Restaurant</button>
         </div>
       </div>
 
@@ -39,25 +39,19 @@ const Restaurant = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h4 style={{ margin: '0' }}>{menu.name}</h4>
-                <p style={{ fontSize: '0.85rem', color: '#888', margin: '2px 0 10px 0' }}>{menu.description}</p>
+                <p style={{ fontSize: '0.85rem', color: '#888' }}>{menu.description}</p>
               </div>
               <div style={{ display: 'flex', gap: '5px' }}>
                 <button onClick={() => setActiveMenuFormId(activeMenuFormId === menu.id ? null : menu.id)} style={{ fontSize: '0.7rem' }}>+ Item</button>
-                <button onClick={() => onDeleteMenu(menu.id)} style={{ fontSize: '0.7rem', color: '#ff4444', border: '1px solid #ff4444', background: 'transparent' }}>Delete Menu</button>
+                <button onClick={() => onDeleteMenu?.(menu.id)} style={{ fontSize: '0.7rem', color: '#ff4444' }}>Delete Menu</button>
               </div>
             </div>
 
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {menuItems.filter(item => item.menu_id === menu.id).map(item => (
-                <li key={item.id} style={{ padding: '8px 0', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontWeight: '500' }}>{item.name}</span>
-                    <span style={{ marginLeft: '10px', color: '#44aa44' }}>${item.price.toFixed(2)}</span>
-                    {!item.in_stock && <span style={{ color: '#ff4444', fontSize: '0.7rem', marginLeft: '10px' }}>(Sold Out)</span>}
-                  </div>
-                  <button onClick={() => onDeleteMenuItem(item.id)} style={{ padding: '2px 8px', color: '#ff4444', cursor: 'pointer', background: 'none', border: '1px solid #444' }}>
-                    ✕
-                  </button>
+                <li key={item.id} style={{ padding: '8px 0', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{item.name} - <strong style={{ color: '#44aa44' }}>${item.price.toFixed(2)}</strong></span>
+                  <button onClick={() => onDeleteMenuItem?.(item.id)} style={{ color: '#ff4444', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                 </li>
               ))}
             </ul>
@@ -67,7 +61,7 @@ const Restaurant = ({
                 menuId={menu.id} 
                 onCancel={() => setActiveMenuFormId(null)}
                 onSubmit={(itemData) => {
-                  onAddMenuItem(itemData);
+                  onAddMenuItem?.(itemData);
                   setActiveMenuFormId(null);
                 }}
               />
@@ -79,7 +73,7 @@ const Restaurant = ({
           <MenuForm 
             restaurantId={restaurant.id} 
             onSubmit={(menuData) => {
-              onAddMenu(menuData);
+              onAddMenu?.(menuData);
               setShowMenuForm(false);
             }}
             onCancel={() => setShowMenuForm(false)}
