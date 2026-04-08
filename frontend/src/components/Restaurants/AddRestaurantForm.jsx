@@ -38,19 +38,33 @@ const AddRestaurantForm = ({ onSubmit, restaurantToEdit = null, onCancel }) => {
     setFormData(prev => ({ ...prev, [field]: newTimes }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const finalData = {
-      ...formData,
-      id: restaurantToEdit?.id, 
-      rating: Number(formData.rating),
-      max_prep_time_minutes: Number(formData.max_prep_time_minutes),
-      tags: typeof formData.tags === 'string' 
-        ? formData.tags.split(',').map(t => t.trim()).filter(t => t !== "")
-        : formData.tags
-    };
-    onSubmit(finalData);
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  // Clean up the hours data before sending
+  const formatHour = (h) => {
+    if (!h || h.trim() === "") return ""; // Backend validator allows ""
+    return h.slice(0, 5); // Forces "HH:MM", removing any ":SS" seconds
   };
+
+  const finalData = {
+    ...formData,
+    id: restaurantToEdit?.id, 
+    // Ensure rating is an integer to match: Field(..., ge=0, le=5)
+    rating: Math.round(Number(formData.rating || 0)),
+    max_prep_time_minutes: Number(formData.max_prep_time_minutes),
+    
+    opening_hours: formData.opening_hours.map(formatHour),
+    closing_hours: formData.closing_hours.map(formatHour),
+    
+    tags: typeof formData.tags === 'string' 
+      ? formData.tags.split(',').map(t => t.trim()).filter(t => t !== "")
+      : formData.tags
+  };
+  
+  console.log("Payload being sent to backend:", finalData);
+  onSubmit(finalData);
+};
 
   return (
     <form onSubmit={handleSubmit} style={{ padding: '20px', border: '1px solid #444', borderRadius: '8px', background: '#1a1a1a' }}>

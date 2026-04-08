@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from "../api.js";
-import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm';
-import Restaurant from '../components/Restaurants/Restaurant';
+import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm.jsx';
+import Restaurant from '../components/Restaurants/Restaurant.jsx';
 
-const ManagerDashboard = () => {
+const OwnerDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [menus, setMenus] = useState({});
   const [menuItems, setMenuItems] = useState([]);
@@ -132,4 +132,4 @@ const ManagerDashboard = () => {
   );
 };
 
-export default ManagerDashboard;
+export default OwnerDashboard;
