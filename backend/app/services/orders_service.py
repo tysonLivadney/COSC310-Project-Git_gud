@@ -153,6 +153,15 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     }
 
 
+def complete_order(order_id: str) -> None:
+    idx, o, orders = _find_order(order_id)
+    if o.get("status") != OrderStatus.CONFIRMED.value:
+        raise HTTPException(status_code=400, detail="Only confirmed orders can be completed.")
+    o["status"] = OrderStatus.COMPLETED.value
+    orders[idx] = o
+    save_all(orders)
+
+
 def cancel_order(order_id: str) -> None:
     idx, o, orders = _find_order(order_id)
     _require_draft(o, "cancelled")
