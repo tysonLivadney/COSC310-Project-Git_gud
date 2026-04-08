@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from "../api.js";
 import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm';
-import Restaurant from '../components/Restaurants/Restaurants';
+import Restaurant from '../components/Restaurants/Restaurant';
 
-const INITIAL_FORM_STATE = {
-  name: "", address: "", description: "", phone: "",
-  rating: 5, tags: [], opening_hours: Array(7).fill("09:00"),
-  closing_hours: Array(7).fill("22:00"), max_prep_time_minutes: 30
-};
-
-const ManagerDashboard = () => {
+const OwnerDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [menus, setMenus] = useState({});
   const [menuItems, setMenuItems] = useState([]);
@@ -46,7 +40,6 @@ const ManagerDashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- RESTAURANT HANDLERS ---
   const handleAddOrUpdateRes = async (data) => {
     try {
       if (editingRestaurant) {
@@ -58,7 +51,24 @@ const ManagerDashboard = () => {
       setEditingRestaurant(null);
       setError("");
       fetchData();
-    } catch (err) { setError("Error saving restaurant."); }
+    } catch (err) {
+      // --- NEW ERROR PARSING LOGIC ---
+      if (err.response && err.response.status === 422) {
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          // Extracts field name and message (e.g., "phone: value is not a valid phone number")
+          const errorMessages = details.map(d => {
+            const field = d.loc[d.loc.length - 1];
+            return `${field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}: ${d.msg}`;
+          });
+          setError(errorMessages.join(" | "));
+        } else {
+          setError(err.response.data.detail || "Validation Error");
+        }
+      } else {
+        setError(err.response?.data?.message || "Error saving restaurant. Please try again.");
+      }
+    }
   };
 
   const handleDeleteRestaurant = async (id) => {
@@ -114,7 +124,6 @@ const ManagerDashboard = () => {
         onSubmit={handleAddOrUpdateRes} 
         restaurantToEdit={editingRestaurant}
         onCancel={() => setEditingRestaurant(null)}
-        initialState={INITIAL_FORM_STATE}
       />
 
       <div className="restaurant-list">
@@ -137,4 +146,4 @@ const ManagerDashboard = () => {
   );
 };
 
-export default ManagerDashboard;
+export default OwnerDashboard;
