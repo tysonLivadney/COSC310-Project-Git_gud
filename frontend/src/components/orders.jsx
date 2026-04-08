@@ -1,17 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOrders } from '../api/orders';
+import { useAuth } from '../context/AuthContext';
+import api from '../api';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuth(); // ← Use the same auth context
 
   useEffect(() => {
-    const currentUserId = localStorage.getItem('user_id');
-    if (currentUserId) {
-      getOrders(currentUserId).then(data => setOrders(data));
+    const fetchOrders = async () => {
+      try {
+        const response = await api.get('/orders/');
+        // Filter orders by current user's ID - same as deliveries
+        const userOrders = response.data.filter(
+          order => order.customer_id === user?.id
+        );
+        setOrders(userOrders);
+      } catch (err) {
+        console.error("Failed to fetch orders", err);
+      }
+    };
+    
+    if (user?.id) {
+      fetchOrders();
     }
-  }, []);
+  }, [user?.id]);
 
   const calculateOrderTotal = (items) => {
     if (!items || items.length === 0) return "0.00";
@@ -80,7 +94,6 @@ const Orders = () => {
   );
 };
 
-// Styles (unchanged but included for completeness)
 const cardStyle = { backgroundColor: '#1e1e1e', padding: '20px', borderRadius: '12px', border: '1px solid #333' };
 const btnStyle = { backgroundColor: '#007bff', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' };
 const statusBadge = (s) => ({

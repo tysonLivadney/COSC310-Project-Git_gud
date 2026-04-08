@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrderById, cancelOrder } from '../api/orders';
+import { getOrderById } from '../api/orders';
 import { useAuth } from '../context/AuthContext';
-import api from '../api'; // Ensure you import your api instance
+import api from '../api';
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -26,8 +26,7 @@ const OrderDetail = () => {
   const totalAmount = subtotal + tax + deliveryFee;
 
   const handleRefund = async () => {
-    const subtotal = order.items?.reduce((acc, item) => acc + (Number(item.unit_price) * item.quantity), 0) || 0;
-    const refundTotal = subtotal + (subtotal * 0.13) + 1.49;
+    const refundTotal = totalAmount;
   
     try {
       await api.delete(`/orders/${orderId}`); 
@@ -41,20 +40,20 @@ const OrderDetail = () => {
     }
   };
 
-const handleCancel = async () => {
-  try {
-    await api.delete(`/orders/${orderId}`);
-    alert("Order deleted/cancelled.");
-    navigate('/my-orders');
-  } catch (err) {
-    console.error("Cancel failed:", err);
-  }
-};
+  const handleCancel = async () => {
+    try {
+      await api.delete(`/orders/${orderId}`);
+      alert("Order deleted/cancelled.");
+      navigate('/my-orders');
+    } catch (err) {
+      console.error("Cancel failed:", err);
+    }
+  };
 
   return (
-    <div style={{ padding: '20px', color: 'white', maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <button onClick={() => navigate('/my-orders')} style={{ color: '#007bff', background: 'none', border: 'none', cursor: 'pointer' }}>
+    <div style={containerStyle}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
+        <button onClick={() => navigate('/my-orders')} style={backBtnStyle}>
           ← Back
         </button>
 
@@ -69,26 +68,161 @@ const handleCancel = async () => {
         </div>
       </div>
 
-      <h2>Order Details ({order.status})</h2>
+      <h1 style={{ marginBottom: '10px' }}>Order Details</h1>
+      <p style={{ color: '#888', marginBottom: '30px', fontSize: '1rem' }}>
+        Status: <span style={statusBadge(order.status)}>{order.status}</span>
+      </p>
       
-      <div style={{ backgroundColor: '#1e1e1e', padding: '20px', borderRadius: '12px' }}>
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0, borderBottom: '1px solid #333', paddingBottom: '15px', fontSize: '1.2rem' }}>Items</h3>
+        
         {order.items?.map((item, idx) => (
-          <div key={idx} style={row}>
-            <span>{item.food_item} x{item.quantity}</span>
-            <span>${(Number(item.unit_price) * item.quantity).toFixed(2)}</span>
+          <div key={idx} style={itemRow}>
+            <div>
+              <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{item.food_item}</div>
+              <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '4px' }}>
+                ${Number(item.unit_price).toFixed(2)} × {item.quantity}
+              </div>
+            </div>
+            <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+              ${(Number(item.unit_price) * item.quantity).toFixed(2)}
+            </span>
           </div>
         ))}
-        <div style={{ borderTop: '1px solid #333', marginTop: '10px', paddingTop: '10px' }}>
-          <div style={row}><span>Total Paid:</span> <strong>${totalAmount.toFixed(2)}</strong></div>
+        
+        <div style={{ borderTop: '2px solid #333', marginTop: '20px', paddingTop: '20px' }}>
+          <div style={summaryRow}>
+            <span>Subtotal:</span>
+            <span>${subtotal.toFixed(2)}</span>
+          </div>
+          <div style={summaryRow}>
+            <span>Delivery Fee:</span>
+            <span>${deliveryFee.toFixed(2)}</span>
+          </div>
+          <div style={summaryRow}>
+            <span>Tax (13%):</span>
+            <span>${tax.toFixed(2)}</span>
+          </div>
+          <div style={totalRow}>
+            <span><strong>Total:</strong></span>
+            <span><strong>${totalAmount.toFixed(2)}</strong></span>
+          </div>
         </div>
       </div>
+
+      {order.restaurant_name && (
+        <div style={infoCardStyle}>
+          <h3 style={{ marginTop: 0, marginBottom: '8px', fontSize: '1rem' }}>Restaurant</h3>
+          <p style={{ margin: 0, color: '#bbb' }}>{order.restaurant_name}</p>
+        </div>
+      )}
+
+      {order.delivery_address && (
+        <div style={infoCardStyle}>
+          <h3 style={{ marginTop: 0, marginBottom: '8px', fontSize: '1rem' }}>Delivery Address</h3>
+          <p style={{ margin: 0, color: '#bbb' }}>{order.delivery_address}</p>
+        </div>
+      )}
     </div>
   );
 };
 
 // Styles
-const row = { display: 'flex', justifyContent: 'space-between', margin: '5px 0' };
-const cancelBtnStyle = { border: '1px solid #ff4444', color: '#ff4444', background: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' };
-const refundBtnStyle = { backgroundColor: '#ffc107', color: '#000', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' };
+const containerStyle = {
+  padding: '40px',
+  color: 'white',
+  maxWidth: '900px',
+  margin: '0 auto',
+  backgroundColor: '#121212',
+  minHeight: '100vh',
+  fontFamily: 'sans-serif'
+};
+
+const cardStyle = {
+  backgroundColor: '#1e1e1e',
+  padding: '30px',
+  borderRadius: '12px',
+  border: '1px solid #333',
+  marginBottom: '20px'
+};
+
+const infoCardStyle = {
+  backgroundColor: '#1e1e1e',
+  padding: '20px',
+  borderRadius: '12px',
+  border: '1px solid #333',
+  marginTop: '20px'
+};
+
+const itemRow = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  padding: '15px 0',
+  borderBottom: '1px solid #2a2a2a'
+};
+
+const summaryRow = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  margin: '10px 0',
+  fontSize: '1rem',
+  color: '#bbb'
+};
+
+const totalRow = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  borderTop: '2px solid #444',
+  marginTop: '15px',
+  paddingTop: '15px',
+  fontSize: '1.3rem'
+};
+
+const backBtnStyle = {
+  color: '#007bff',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: '1rem',
+  fontWeight: '500'
+};
+
+const cancelBtnStyle = {
+  border: '1px solid #ff4444',
+  color: '#ff4444',
+  background: 'none',
+  padding: '10px 20px',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '0.9rem'
+};
+
+const refundBtnStyle = {
+  backgroundColor: '#ffc107',
+  color: '#000',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '0.9rem'
+};
+
+const statusBadge = (status) => ({
+  display: 'inline-block',
+  backgroundColor: status === 'delivered' ? '#4caf50' : 
+                   status === 'cancelled' ? '#f44336' : 
+                   status === 'confirmed' ? '#2196f3' : 
+                   status === 'refunded' ? '#ff9800' : '#ff9800',
+  color: 'white',
+  padding: '6px 14px',
+  borderRadius: '20px',
+  fontSize: '0.8rem',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+  marginLeft: '8px'
+});
 
 export default OrderDetail;
