@@ -135,7 +135,10 @@ def complete_delivery(delivery_id: str, current_user_id: str) -> Delivery:
     delivery.status = DeliveryStatus.DELIVERED
     delivery.updated_at = datetime.now()
     _update(delivery)
-    complete_order(delivery.order_id)
+    try:
+        complete_order(delivery.order_id)
+    except HTTPException:
+        pass
     notifications_service.notify(delivery, NotificationType.DELIVERY_COMPLETED)
     return delivery
 
