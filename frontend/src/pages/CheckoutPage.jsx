@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import OrderSummary from "../components/Restaurants/checkout/OrderSummary.jsx";
 import PaymentForm from "../components/Restaurants/checkout/PaymentForm.jsx";
 import { getCart, clearCart } from "../utils/cartUtils.js";
+import api from "../api.js";
 
 const CheckoutPage = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -26,7 +27,7 @@ const CheckoutPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/auth/me", {
+      const response = await api.fetch("http://localhost:8000/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
