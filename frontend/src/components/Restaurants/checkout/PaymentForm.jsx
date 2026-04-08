@@ -13,7 +13,12 @@ const PaymentForm = ({ onSubmit, loading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(paymentInfo);
+    if (loading) return;
+    onSubmit({
+      card_number: paymentInfo.card_number.trim(),
+      expiry: paymentInfo.expiry.trim(),
+      cvv: paymentInfo.cvv.trim(),
+    });
   };
 
   return (

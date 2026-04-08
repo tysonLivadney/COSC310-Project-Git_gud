@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CartItem from "../components/Restaurants/cart/CartItem.jsx";
-import { getCart, removeFromCart, updateQuantity, getCartSubtotal } from "../utils/cartUtils.js";
+import {
+  getCart,
+  removeFromCart,
+  updateQuantity,
+  getCartSubtotal,
+} from "../utils/cartUtils.js";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
   const loadCart = () => {
     setCartItems(getCart());
   };
+
   useEffect(() => {
     loadCart();
   }, []);
+
   const handleRemove = (food_item, restaurant_id) => {
     removeFromCart(food_item, restaurant_id);
     loadCart();
   };
+
   const handleQuantityChange = (food_item, restaurant_id, quantity) => {
     updateQuantity(food_item, restaurant_id, quantity);
     loadCart();
@@ -23,17 +33,21 @@ const CartPage = () => {
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      alert("Your cart is empty.");
+      setError("Your cart is empty.");
       return;
     }
+
     const firstRestaurantId = cartItems[0].restaurant_id;
     const mixedRestaurant = cartItems.some(
       (item) => item.restaurant_id !== firstRestaurantId
     );
+
     if (mixedRestaurant) {
-      alert("Please order from one restaurant at a time.");
+      setError("Please order from one restaurant at a time.");
       return;
     }
+
+    setError("");
     navigate("/checkout");
   };
 
@@ -42,6 +56,9 @@ const CartPage = () => {
   return (
     <div>
       <h2>Your Cart</h2>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
       {cartItems.length === 0 ? (
         <p>Your cart is empty.</p>
       ) : (
@@ -56,6 +73,7 @@ const CartPage = () => {
               />
             ))}
           </ul>
+
           <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
           <button onClick={handleCheckout}>Proceed to Checkout</button>
         </div>
@@ -63,4 +81,5 @@ const CartPage = () => {
     </div>
   );
 };
+
 export default CartPage;

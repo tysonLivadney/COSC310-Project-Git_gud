@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import RestaurantList from './components/Restaurants/Restaurants';
 import ManagerDashboard from './pages/ManagerDashboard';
-import Login from './pages/Login';
+import Login from './pages/login';
 import Register from './pages/Register';
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
