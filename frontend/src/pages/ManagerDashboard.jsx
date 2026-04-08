@@ -3,12 +3,6 @@ import api from "../api.js";
 import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm';
 import Restaurant from '../components/Restaurants/Restaurant';
 
-const INITIAL_FORM_STATE = {
-  name: "", address: "", description: "", phone: "",
-  rating: 5, tags: [], opening_hours: Array(7).fill("09:00"),
-  closing_hours: Array(7).fill("22:00"), max_prep_time_minutes: 30
-};
-
 const ManagerDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [menus, setMenus] = useState({});
@@ -36,7 +30,7 @@ const ManagerDashboard = () => {
       });
       setMenus(menusMap);
 
-      const itemPromises = allMyMenuIds.map(menuId => api.get(`/menu-items/search?menu_id=${menuId}`));
+      const itemPromises = allMyMenuIds.map(menuId => api.get(`/menus/${menuId}/items`));
       const itemResults = await Promise.all(itemPromises);
       setMenuItems(itemResults.flatMap(r => r.data));
       
@@ -116,7 +110,6 @@ const ManagerDashboard = () => {
         onSubmit={handleAddOrUpdateRes} 
         restaurantToEdit={editingRestaurant}
         onCancel={() => setEditingRestaurant(null)}
-        initialState={INITIAL_FORM_STATE}
       />
 
       <div className="restaurant-list">
