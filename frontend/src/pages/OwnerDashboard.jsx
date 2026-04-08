@@ -42,7 +42,6 @@ const OwnerDashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- RESTAURANT HANDLERS ---
   const handleAddOrUpdateRes = async (data) => {
     try {
       if (editingRestaurant) {
@@ -54,7 +53,24 @@ const OwnerDashboard = () => {
       setEditingRestaurant(null);
       setError("");
       fetchData();
-    } catch (err) { setError("Error saving restaurant."); }
+    } catch (err) {
+      // --- NEW ERROR PARSING LOGIC ---
+      if (err.response && err.response.status === 422) {
+        const details = err.response.data.detail;
+        if (Array.isArray(details)) {
+          // Extracts field name and message (e.g., "phone: value is not a valid phone number")
+          const errorMessages = details.map(d => {
+            const field = d.loc[d.loc.length - 1];
+            return `${field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}: ${d.msg}`;
+          });
+          setError(errorMessages.join(" | "));
+        } else {
+          setError(err.response.data.detail || "Validation Error");
+        }
+      } else {
+        setError(err.response?.data?.message || "Error saving restaurant. Please try again.");
+      }
+    }
   };
 
   const handleDeleteRestaurant = async (id) => {
