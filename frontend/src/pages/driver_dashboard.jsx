@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
@@ -19,6 +20,7 @@ const STATUS_LABEL = {
 
 const DriverDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState([]);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -56,7 +58,7 @@ const DriverDashboard = () => {
     <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h1>Driver Dashboard</h1>
-        <button onClick={logout} style={{ padding: '8px 16px', cursor: 'pointer' }}>
+        <button onClick={() => { logout(); navigate('/login'); }} style={{ padding: '8px 16px', cursor: 'pointer' }}>
           Logout
         </button>
       </div>
