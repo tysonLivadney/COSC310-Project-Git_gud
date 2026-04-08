@@ -33,6 +33,7 @@ const AdminDashboard = () => {
   const [availableDrivers, setAvailableDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState({});
   const [report, setReport] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
 
@@ -68,6 +69,24 @@ const AdminDashboard = () => {
     fetchOrders(statusFilter);
   }, [statusFilter]);
 
+  const fetchReviews = async () => {
+    try {
+      const restRes = await api.get('/restaurants');
+      const allReviews = [];
+      for (const r of restRes.data) {
+        try {
+          const revRes = await api.get(`/reviews/restaurant/${r.id}`);
+          revRes.data.forEach(rev => allReviews.push({ ...rev, restaurant_name: r.name }));
+        } catch {
+          // restaurant may have no reviews
+        }
+      }
+      setReviews(allReviews);
+    } catch {
+      // non-critical
+    }
+  };
+
   const fetchReport = async () => {
     try {
       const res = await api.get('/admin/reports');
@@ -81,6 +100,7 @@ const AdminDashboard = () => {
     fetchDeliveries();
     fetchAvailableDrivers();
     fetchReport();
+    fetchReviews();
   }, []);
 
   const handleAssign = async (deliveryId) => {
@@ -253,6 +273,24 @@ const AdminDashboard = () => {
           )}
         </section>
       )}
+      {/* Reviews Section */}
+      <section style={{ marginBottom: '48px' }}>
+        <h2 style={{ marginBottom: '16px' }}>Reviews</h2>
+        {reviews.length === 0 ? (
+          <p style={{ color: '#888' }}>No reviews yet.</p>
+        ) : (
+          reviews.map(review => (
+            <div key={review.id} style={{ border: '1px solid #2a2a2a', borderRadius: '8px', padding: '16px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span><strong>{review.restaurant_name || `Restaurant ${review.restaurant_id}`}</strong></span>
+                <span style={{ color: '#ffb74d' }}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+              </div>
+              {review.comment && <p style={{ color: '#ccc', margin: '0 0 6px', fontSize: '14px' }}>{review.comment}</p>}
+              <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>Order: {review.order_id}</p>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 };
