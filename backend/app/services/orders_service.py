@@ -13,6 +13,7 @@ from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService
 from services.payment_service import PaymentService
 from services.restaurants_service import can_accept_order, get_restaurant_by_id
+from services.order_total_calculator import subtotal_from_order
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
@@ -152,6 +153,7 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
         **pricing,
     }
 
+from datetime import datetime, timezone
 
 def complete_order(order_id: str) -> None:
     idx, o, orders = _find_order(order_id)
@@ -163,17 +165,45 @@ def complete_order(order_id: str) -> None:
 
 
 def cancel_order(order_id: str) -> None:
-    idx, o, orders = _find_order(order_id)
-    _require_draft(o, "cancelled")
+    orders = load_all()
 
-    cancelled = Order(
-        id=order_id,
-        restaurant_id=o["restaurant_id"],
-        customer_id=o["customer_id"],
-        items=[item for item in o["items"]],
-        delivery_address=o.get("delivery_address"),
-        status=OrderStatus.CANCELLED,
-        created_at=o["created_at"],
-    )
-    orders[idx] = cancelled.model_dump()
-    save_all(orders)
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+
+            if o.get("status") not in [OrderStatus.DRAFT.value,OrderStatus.CONFIRMED.value,]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only draft or confirmed orders can be cancelled.",)
+
+            o["status"] = OrderStatus.CANCELLED.value
+            o["cancelled_at"] = datetime.now(timezone.utc).isoformat()
+
+            orders[idx] = o
+            save_all(orders)
+
+            if o.get("confirmed_at"):
+                refund_order(order_id)
+
+            return
+
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+    
+def refund_order(order_id:str) -> Order:
+    orders = load_all()
+    for idx, o in enumerate(orders):
+        if o.get("id") == order_id:
+            if o.get("status") != OrderStatus.CANCELLED.value:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only cancelled orders can be refunded.",
+                )
+            order = Order(**o)
+            refund_amount = subtotal_from_order(order)
+            o["status"] = OrderStatus.REFUNDED.value
+            o["refunded_at"] = datetime.now(timezone.utc).isoformat()
+            o["refund_amount"] = str(refund_amount)
+            orders[idx] = o
+            save_all(orders)
+            return Order(**o)
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+

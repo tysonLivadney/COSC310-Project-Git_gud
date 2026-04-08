@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from "../api.js";
 import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm';
-import Restaurant from '../components/Restaurants/Restaurant';
+import Restaurant from '../components/Restaurants/Restaurants';
 
 const INITIAL_FORM_STATE = {
   name: "", address: "", description: "", phone: "",
@@ -36,11 +36,9 @@ const ManagerDashboard = () => {
       });
       setMenus(menusMap);
 
-      const itemPromises = allMyMenuIds.map(menuId => api.get(`/menu-items/search?menu_id=${menuId}`));
-      const itemResults = await Promise.all(itemPromises);
-      setMenuItems(itemResults.flatMap(r => r.data));
-      
-      setError(""); 
+      const itemResponse = await api.get('/menu-items'); 
+      setMenuItems(itemResponse.data);
+      setError("");
     } catch (err) {
       setError("Failed to load dashboard data.");
     }
