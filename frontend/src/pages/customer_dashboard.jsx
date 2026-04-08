@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../api';
 import { useCustomerSearch } from '../hooks/useCustomerSearch';
+import api from '../api';
 
 const CustomerDashboard = () => {
   const { balance, user } = useAuth();
   const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Search hook
   const { state, setSearchTerm, setCuisine, setMaxPrice, setSearchType, setPage, actions } = useCustomerSearch();
 
   useEffect(() => {
@@ -33,51 +31,40 @@ const CustomerDashboard = () => {
 
   return (
     <div style={containerStyle}>
-      {/* HEADER SECTION */}
+      {/* HEADER */}
       <header style={headerStyle}>
         <div>
           <h1 style={{ margin: 10 }}>Hello, {user?.name || 'Customer'}</h1>
           <p style={{ color: '#aaa' }}>Track your food and manage your account.</p>
         </div>
-        
         <div style={{ textAlign: 'right' }}>
           <div style={balanceCard}>
             <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 'bold' }}>WALLET BALANCE</span>
             <h2 style={{ margin: '5px 0', color: '#4caf50' }}>${balance.toFixed(2)}</h2>
           </div>
-          
-          <button 
-            onClick={() => navigate('/my-orders')} 
-            style={orderBtnStyle}
-          >
+          <button onClick={() => navigate('/my-orders')} style={orderBtnStyle}>
             View My Orders →
           </button>
         </div>
       </header>
 
       {/* ACTIVE DELIVERIES SECTION */}
-      <section>
+      <section style={{ marginBottom: '40px' }}>
         <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Active Deliveries</h3>
         {loading ? (
           <p>Loading your orders...</p>
         ) : deliveries.length > 0 ? (
           <div style={gridStyle}>
             {deliveries.map((delivery) => (
-              <div 
-                key={delivery.id} 
-                style={cardStyle} 
-                onClick={() => navigate(`/delivery/${delivery.id}`)}
-              >
+              <div key={delivery.id} style={cardStyle} onClick={() => navigate(`/delivery/${delivery.id}`)}>
                 <div style={cardHeader}>
                   <span style={statusBadge(delivery.status)}>{delivery.status}</span>
                   <small style={{ color: '#666' }}>ID: {delivery.id.slice(0, 6)}</small>
                 </div>
-                
                 <div style={{ margin: '15px 0' }}>
                   <p style={addressText}>📍 <strong>From:</strong> {delivery.pickup_address}</p>
                   <p style={addressText}>🏠 <strong>To:</strong> {delivery.dropoff_address}</p>
                 </div>
-
                 <div style={cardFooter}>View Details & Manage →</div>
               </div>
             ))}
@@ -88,7 +75,7 @@ const CustomerDashboard = () => {
       </section>
 
       {/* SEARCH SECTION */}
-      <section style={{ marginTop: '40px' }}>
+      <section>
         <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Search Food</h3>
         
         <form onSubmit={actions.executeNewSearch} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
