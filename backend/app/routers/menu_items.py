@@ -16,7 +16,7 @@ def post_menu_item(payload: MenuItemCreate):
 @router.get("/search", response_model = List[MenuItem])
 def get_menu_items_filtered(
     menu_id: str=None,
-    name: str = None, cuisine: str = None,
+    name: str = None,
     max_price: int = None, 
     limit: int = Query(10, ge=1, le=20, description="Number of items to return"),
     offset: int = Query(0, ge=0, description="Number of items to skip")):
