@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [availableDrivers, setAvailableDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState({});
+  const [report, setReport] = useState(null);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
 
@@ -67,9 +68,19 @@ const AdminDashboard = () => {
     fetchOrders(statusFilter);
   }, [statusFilter]);
 
+  const fetchReport = async () => {
+    try {
+      const res = await api.get('/admin/reports');
+      setReport(res.data);
+    } catch {
+      // non-critical
+    }
+  };
+
   useEffect(() => {
     fetchDeliveries();
     fetchAvailableDrivers();
+    fetchReport();
   }, []);
 
   const handleAssign = async (deliveryId) => {
@@ -199,6 +210,49 @@ const AdminDashboard = () => {
           <p style={{ color: '#888' }}>No active deliveries.</p>
         )}
       </section>
+
+      {/* Reports Section */}
+      {report && (
+        <section style={{ marginBottom: '48px' }}>
+          <h2 style={{ marginBottom: '16px' }}>Reports</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ border: '1px solid #444', borderRadius: '8px', padding: '16px' }}>
+              <p style={{ color: '#888', margin: '0 0 4px', fontSize: '13px' }}>Total Revenue</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>${report.total_revenue.toFixed(2)}</p>
+            </div>
+            <div style={{ border: '1px solid #444', borderRadius: '8px', padding: '16px' }}>
+              <p style={{ color: '#888', margin: '0 0 4px', fontSize: '13px' }}>Avg Delivery Time</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
+                {report.average_delivery_time != null ? `${report.average_delivery_time} min` : 'N/A'}
+              </p>
+            </div>
+          </div>
+
+          {report.revenue_per_restaurant.length > 0 && (
+            <>
+              <h3 style={{ marginBottom: '12px' }}>Revenue by Restaurant</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
+                    <th style={{ padding: '8px' }}>Restaurant ID</th>
+                    <th style={{ padding: '8px' }}>Orders</th>
+                    <th style={{ padding: '8px' }}>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.revenue_per_restaurant.map(r => (
+                    <tr key={r.restaurant_id} style={{ borderBottom: '1px solid #2a2a2a' }}>
+                      <td style={{ padding: '8px' }}>{r.restaurant_id}</td>
+                      <td style={{ padding: '8px' }}>{r.order_count}</td>
+                      <td style={{ padding: '8px' }}>${r.total_revenue.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 };
