@@ -316,3 +316,4 @@ def test_can_accept_order_when_finishes_after_close(test_restaurant):
     with patch("services.restaurants_service._is_open", return_value=True), \
          patch("services.restaurants_service._finishes_before_close", return_value=False):
         assert can_accept_order(restaurant) is False
+
