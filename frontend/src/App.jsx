@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/login';
 import Register from './pages/Register';
-import RestaurantList from './components/Restaurants/Restaurants';
+import RestaurantList from './components/Restaurants/Restaurant';
 import ManagerDashboard from './pages/ManagerDashboard';
 import CustomerDashboard from './pages/customer_dashboard';
 import AdminDashboard from './pages/admin_dashboard';
