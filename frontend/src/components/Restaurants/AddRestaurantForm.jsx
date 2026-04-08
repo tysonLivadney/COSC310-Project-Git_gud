@@ -11,8 +11,8 @@ const AddRestaurantForm = ({ onSubmit, restaurantToEdit = null, onCancel }) => {
     rating: 0,
     tags: '',
     max_prep_time_minutes: 30,
-    opening_hours: Array(7).fill(""),
-    closing_hours: Array(7).fill("")
+    opening_hours: Array(7).fill("09:00"),
+    closing_hours: Array(7).fill("22:00")
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -23,8 +23,6 @@ const AddRestaurantForm = ({ onSubmit, restaurantToEdit = null, onCancel }) => {
         ...restaurantToEdit,
         tags: Array.isArray(restaurantToEdit.tags) ? restaurantToEdit.tags.join(', ') : '',
       });
-    } else {
-      setFormData(initialFormState);
     }
   }, [restaurantToEdit]);
 
@@ -52,36 +50,66 @@ const AddRestaurantForm = ({ onSubmit, restaurantToEdit = null, onCancel }) => {
         : formData.tags
     };
     onSubmit(finalData);
-    if (!restaurantToEdit) setFormData(initialFormState);
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '20px', border: '1px solid #444', borderRadius: '8px' }}>
-      <h3>{restaurantToEdit ? 'Update Restaurant' : 'Add New Restaurant'}</h3>
+    <form onSubmit={handleSubmit} style={{ padding: '20px', border: '1px solid #444', borderRadius: '8px', background: '#1a1a1a' }}>
+      <h3 style={{ marginTop: 0 }}>{restaurantToEdit ? 'Update Restaurant' : 'Add New Restaurant'}</h3>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" required />
         <input name="address" value={formData.address} onChange={handleChange} placeholder="Address" required />
         <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" rows="3" required />
         <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" required />
-        <input type="number" name="rating" value={formData.rating} onChange={handleChange} placeholder="Rating" step="0.1" />
-        <input type="number" name="max_prep_time_minutes" value={formData.max_prep_time_minutes} onChange={handleChange} placeholder="Prep Time" />
-        <input name="tags" value={formData.tags} onChange={handleChange} placeholder="Tags (comma separated)" />
+        
+        <div style={{ display: 'flex', gap: '15px' }}>
+           <div style={{ flex: 1 }}>
+             <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>Rating (0-5)</label>
+             <input 
+               type="number" 
+               name="rating"
+               min="0" 
+               max="5" 
+               step="0.1" 
+               value={formData.rating} 
+               onChange={handleChange} 
+               style={{ width: '100%' }}
+             />
+           </div>
+           <div style={{ flex: 1 }}>
+             <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>Prep Time (min)</label>
+             <input 
+               type="number" 
+               name="max_prep_time_minutes" 
+               value={formData.max_prep_time_minutes} 
+               onChange={handleChange} 
+               style={{ width: '100%' }}
+             />
+           </div>
+        </div>
+        
+        <input name="tags" value={formData.tags} onChange={handleChange} placeholder="Tags (comma separated: Pizza, Italian, Cheap)" />
       </div>
 
-      <h4>Hours</h4>
+      <h4 style={{ marginBottom: '10px' }}>Operating Hours</h4>
       {days.map((day, i) => (
         <div key={day} style={{ marginBottom: '5px', display: 'flex', gap: '5px', alignItems: 'center' }}>
-          <label style={{ width: '45px' }}>{day}</label>
+          <label style={{ width: '45px', fontSize: '0.9rem' }}>{day}</label>
           <input type="time" value={formData.opening_hours[i]} onChange={(e) => handleTimeChange(i, 'open', e.target.value)} />
           <span>-</span>
           <input type="time" value={formData.closing_hours[i]} onChange={(e) => handleTimeChange(i, 'close', e.target.value)} />
         </div>
       ))}
 
-      <div style={{ marginTop: '15px' }}>
-        <button type="submit">{restaurantToEdit ? 'Save' : 'Add'}</button>
-        {restaurantToEdit && <button type="button" onClick={onCancel} style={{ marginLeft: '10px' }}>Cancel</button>}
+      <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+        <button type="submit" style={{ padding: '8px 20px', background: '#44aa44', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          {restaurantToEdit ? 'Save Changes' : 'Add Restaurant'}
+        </button>
+        {restaurantToEdit && (
+          <button type="button" onClick={onCancel} style={{ padding: '8px 20px', background: '#555', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            Cancel
+          </button>
+        )}
       </div>
     </form>
   );

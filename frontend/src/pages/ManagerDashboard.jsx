@@ -1,16 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from "../api.js";
 import AddRestaurantForm from '../components/Restaurants/AddRestaurantForm';
-import Restaurant from '../components/Restaurants/Restaurants';
+import Restaurant from '../components/Restaurants/Restaurant';
+
+const INITIAL_FORM_STATE = {
+  name: "", address: "", description: "", phone: "",
+  rating: 5, tags: [], opening_hours: Array(7).fill("09:00"),
+  closing_hours: Array(7).fill("22:00"), max_prep_time_minutes: 30
+};
 
 const ManagerDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
-  const [menus, setMenus] = useState({}); 
+  const [menus, setMenus] = useState({});
   const [menuItems, setMenuItems] = useState([]);
   const [editingRestaurant, setEditingRestaurant] = useState(null);
   const [error, setError] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const me = await api.get('/auth/me');
       const resResponse = await api.get('/restaurants');
@@ -21,85 +27,97 @@ const ManagerDashboard = () => {
       const menuResults = await Promise.all(menuPromises);
       
       const menusMap = {};
+      const allMyMenuIds = [];
+      
       menuResults.forEach((result, index) => {
-        menusMap[myRestaurants[index].id] = result.data;
+        const restaurantId = myRestaurants[index].id;
+        menusMap[restaurantId] = result.data;
+        result.data.forEach(m => allMyMenuIds.push(m.id));
       });
       setMenus(menusMap);
 
-      const itemResponse = await api.get('/menu-items'); 
-      setMenuItems(itemResponse.data);
-      setError("");
+      const itemPromises = allMyMenuIds.map(menuId => api.get(`/menu-items/search?menu_id=${menuId}`));
+      const itemResults = await Promise.all(itemPromises);
+      setMenuItems(itemResults.flatMap(r => r.data));
+      
+      setError(""); 
     } catch (err) {
       setError("Failed to load dashboard data.");
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
 
-  const handleDeleteRestaurant = async (id) => {
-    if (!window.confirm("Delete this restaurant? This will remove all menus and items.")) return;
-    try {
-      await api.delete(`/restaurants/${id}`);
-      fetchData();
-    } catch (err) { setError("Failed to delete restaurant."); }
-  };
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleDeleteMenu = async (id) => {
-    if (!window.confirm("Delete this menu?")) return;
-    try {
-      await api.delete(`/menus/${id}`);
-      fetchData();
-    } catch (err) { setError("Failed to delete menu."); }
-  };
-
-  const handleDeleteMenuItem = async (id) => {
-    if (!window.confirm("Delete this item?")) return;
-    try {
-      await api.delete(`/menu-items/${id}`);
-      fetchData();
-    } catch (err) { setError("Failed to delete item."); }
-  };
-
-  const handleAddMenu = async (menuData) => {
-    try {
-      await api.post('/menus', menuData);
-      fetchData();
-    } catch (err) { setError("Error saving menu."); }
-  };
-
-  const handleAddMenuItem = async (itemData) => {
-    try {
-      await api.post('/menu-items', itemData);
-      fetchData();
-    } catch (err) { setError("Error saving item."); }
-  };
-
+  // --- RESTAURANT HANDLERS ---
   const handleAddOrUpdateRes = async (data) => {
     try {
       if (editingRestaurant) {
         await api.put(`/restaurants/${data.id}`, data);
       } else {
-        await api.post('/restaurants', data);
+        const { id, ...payload } = data;
+        await api.post('/restaurants', payload);
       }
       setEditingRestaurant(null);
+      setError("");
       fetchData();
     } catch (err) { setError("Error saving restaurant."); }
+  };
+
+  const handleDeleteRestaurant = async (id) => {
+    if (!window.confirm("Delete restaurant and all its data?")) return;
+    try {
+      await api.delete(`/restaurants/${id}`);
+      fetchData();
+    } catch (err) { setError("Delete failed."); }
+  };
+
+  // --- MENU HANDLERS ---
+  const handleAddMenu = async (menuData) => {
+    try {
+      const { id, ...payload } = menuData;
+      await api.post('/menus', payload);
+      setError("");
+      fetchData();
+    } catch (err) { setError("Failed to add menu."); }
+  };
+
+  const handleDeleteMenu = async (menuId) => {
+    if (!window.confirm("Delete this menu?")) return;
+    try {
+      await api.delete(`/menus/${menuId}`);
+      fetchData();
+    } catch (err) { setError("Delete failed."); }
+  };
+
+  // --- ITEM HANDLERS ---
+  const handleAddMenuItem = async (itemData) => {
+    try {
+      const { id, ...payload } = itemData;
+      await api.post('/menu-items', payload);
+      setError("");
+      fetchData();
+    } catch (err) { setError("Failed to add item."); }
+  };
+
+  const handleDeleteMenuItem = async (itemId) => {
+    if (!window.confirm("Delete this item?")) return;
+    try {
+      await api.delete(`/menu-items/${itemId}`);
+      fetchData();
+    } catch (err) { setError("Delete failed."); }
   };
 
   return (
     <div className="dashboard-container">
       <h1>Manager Dashboard</h1>
-      {error && <div style={{ color: '#ff4444', marginBottom: '20px', fontWeight: 'bold' }}>{error}</div>}
+      {error && <div style={{ color: 'white', background: '#d9534f', padding: '10px', marginBottom: '20px' }}>{error}</div>}
 
       <AddRestaurantForm 
         onSubmit={handleAddOrUpdateRes} 
         restaurantToEdit={editingRestaurant}
         onCancel={() => setEditingRestaurant(null)}
+        initialState={INITIAL_FORM_STATE}
       />
-
-      <hr style={{ margin: '30px 0', border: '0.5px solid #444' }} />
 
       <div className="restaurant-list">
         {restaurants.map(res => (
@@ -108,15 +126,12 @@ const ManagerDashboard = () => {
             restaurant={res} 
             menus={menus[res.id] || []}
             menuItems={menuItems}
+            onEdit={(r) => { setEditingRestaurant(r); window.scrollTo(0, 0); }}
             onDelete={() => handleDeleteRestaurant(res.id)}
+            onAddMenu={handleAddMenu} 
             onDeleteMenu={handleDeleteMenu}
-            onDeleteMenuItem={handleDeleteMenuItem}
-            onAddMenu={handleAddMenu}
             onAddMenuItem={handleAddMenuItem}
-            onEdit={(res) => {
-              setEditingRestaurant(res);
-              window.scrollTo(0, 0);
-            }} 
+            onDeleteMenuItem={handleDeleteMenuItem}
           />
         ))}
       </div>
