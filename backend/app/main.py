@@ -13,6 +13,7 @@ from routers.delivery import router as delivery_router
 from routers.admin import router as admin_router
 from routers.notifications import router as notification_router
 from routers.drivers import router as drivers_router
+from routers.promo_codes import router as promo_codes_router
 app = FastAPI()
 
 @app.get("/health")
@@ -46,3 +47,4 @@ app.include_router(order_total_router)
 app.include_router(admin_router)
 app.include_router(notification_router)
 app.include_router(drivers_router)
+app.include_router(promo_codes_router)
