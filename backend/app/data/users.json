@@ -1,12 +1,1 @@
-[
-  {
-    "id": "0dfd8f13-1289-418f-ab4a-6a7361e32d09",
-    "name": "Test Owner",
-    "email": "owner@test.com",
-    "role": "owner",
-    "password_salt": "30985e8cbb5e2cfef5741bd055346975",
-    "password_hash": "9ca27dd74cfc062dfc867b29b32f97a0eed0aaa8fa9d17920a8e6c6772cf24c9",
-    "created_at": "2026-03-30T18:10:16Z",
-    "address": null
-  }
-]
+[]

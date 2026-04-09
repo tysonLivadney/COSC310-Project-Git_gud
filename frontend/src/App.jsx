@@ -11,6 +11,10 @@ import DriverDashboard from './pages/driver_dashboard';
 import Orders from './components/orders';
 import OrderDetail from './components/OrderDetail';
 import DeliveryDetail from './components/DeliveryDetail';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import SuccessPage from './pages/SuccessPage';
+import FailurePage from './pages/FailurePage';
 
 const App = () => {
   return (
@@ -28,6 +32,10 @@ const App = () => {
           <Route path="/my-orders/:orderId" element={<OrderDetail />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/driver-dashboard" element={<DriverDashboard />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/payment-failed" element={<FailurePage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
