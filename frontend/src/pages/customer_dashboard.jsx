@@ -80,9 +80,9 @@ const CustomerDashboard = () => {
           .map((o) => o.id);
 
         const deliveriesRes = await api.get('/deliveries/');
-        const idsToCheck = deliveriesRes.data
-          .filter((d) => userOrderIds.includes(d.order_id))
-          .map((d) => d.id);
+        const activeDeliveries = deliveriesRes.data.filter((d) => userOrderIds.includes(d.order_id));
+        setDeliveries(activeDeliveries);
+        const idsToCheck = activeDeliveries.map((d) => d.id);
 
         for (const id of idsToCheck) {
           const res = await api.get(`/notifications/${id}`);
@@ -326,9 +326,17 @@ const CustomerDashboard = () => {
                           {menuItems[menu.id]?.map((dish) => (
                             <div key={dish.id} style={dishRowStyle}>
                               <span>{dish.name}</span>
-                              <span style={{ color: '#44aa44' }}>
-                                ${dish.price.toFixed(2)}
-                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#44aa44' }}>
+                                  ${dish.price.toFixed(2)}
+                                </span>
+                                <button
+                                  onClick={() => handleAddToCart({ ...dish, restaurant_id: selectedRestaurantId })}
+                                  style={addCartBtnStyle}
+                                >
+                                  + Add to Cart
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
