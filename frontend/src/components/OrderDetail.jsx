@@ -23,7 +23,8 @@ const OrderDetail = () => {
   const subtotal = order.items?.reduce((acc, item) => acc + (Number(item.unit_price) * item.quantity), 0) || 0;
   const tax = subtotal * 0.13;
   const deliveryFee = 1.49;
-  const totalAmount = subtotal + tax + deliveryFee;
+  const discountAmount = order.discount ? Number(order.discount) : 0;
+  const totalAmount = subtotal + tax + deliveryFee - discountAmount;
 
   const handleRefund = async () => {
     const refundTotal = totalAmount;
@@ -103,6 +104,12 @@ const OrderDetail = () => {
             <span>Tax (13%):</span>
             <span>${tax.toFixed(2)}</span>
           </div>
+          {order.promo_code && (
+            <div style={summaryRow}>
+              <span>Promo ({order.promo_code}):</span>
+              <span style={{ color: '#4caf50' }}>-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div style={totalRow}>
             <span><strong>Total:</strong></span>
             <span><strong>${totalAmount.toFixed(2)}</strong></span>

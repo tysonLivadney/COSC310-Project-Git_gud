@@ -142,6 +142,8 @@ const CheckoutPage = () => {
           orderId: result?.order_id || order.id,
           total: result?.total || orderTotal?.total,
           status: result?.status || "confirmed",
+          promoCode: appliedPromo?.code || null,
+          discount: result?.discount || null,
         },
       });
     } catch (err) {
@@ -223,11 +225,15 @@ const CheckoutPage = () => {
 
           {orderTotal && (
             <div>
-              <OrderSummary orderTotal={orderTotal} />
+              <OrderSummary orderTotal={orderTotal} discount={appliedPromo ? (
+                appliedPromo.discount_type === 'percentage'
+                  ? (Number(orderTotal.subtotal) * appliedPromo.discount_value / 100)
+                  : appliedPromo.discount_value
+              ) : 0} />
               <div style={{ margin: '16px 0' }}>
-                <h3>Promo Code</h3>
+                <label>Promo Code</label>
                 <PromoCodeInput
-                  orderSubtotal={orderTotal.subtotal || 0}
+                  orderSubtotal={Number(orderTotal.subtotal) || 0}
                   onApply={(promo) => setAppliedPromo(promo)}
                   onRemove={() => setAppliedPromo(null)}
                 />

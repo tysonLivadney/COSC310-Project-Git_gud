@@ -35,12 +35,12 @@ const PromoCodeInput = ({ orderSubtotal, onApply, onRemove }) => {
 
   if (applied) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: '#1a2e1a', border: '1px solid #2e7d32', borderRadius: '8px' }}>
-        <span style={{ color: '#4caf50' }}>✓ {applied.code}</span>
-        <span style={{ color: '#aaa', fontSize: '0.85rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', border: '1px solid #2e7d32', borderRadius: '4px' }}>
+        <span style={{ color: '#2e7d32' }}>✓ {applied.code}</span>
+        <span style={{ color: '#666', fontSize: '0.85rem' }}>
           {applied.discount_type === 'percentage' ? `${applied.discount_value}% off` : `$${applied.discount_value} off`}
         </span>
-        <button onClick={handleRemove} style={{ marginLeft: 'auto', background: 'transparent', color: '#f44336', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>
+        <button onClick={handleRemove} style={{ marginLeft: 'auto', background: 'transparent', color: 'red', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>
           Remove
         </button>
       </div>
@@ -51,20 +51,20 @@ const PromoCodeInput = ({ orderSubtotal, onApply, onRemove }) => {
     <div>
       <div style={{ display: 'flex', gap: '8px' }}>
         <input
-          placeholder="Promo code"
+          placeholder="Enter promo code"
           value={code}
           onChange={e => setCode(e.target.value)}
-          style={{ padding: '8px', backgroundColor: '#1e1e1e', color: 'white', border: '1px solid #333', borderRadius: '8px', flex: 1 }}
+          style={{ padding: '6px 10px', flex: 1 }}
         />
         <button
           onClick={handleApply}
           disabled={loading || !code.trim()}
-          style={{ padding: '8px 16px', background: '#007bff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}
+          style={{ padding: '6px 16px', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}
         >
           {loading ? '...' : 'Apply'}
         </button>
       </div>
-      {error && <p style={{ color: '#f44336', fontSize: '0.85rem', margin: '5px 0 0 0' }}>{error}</p>}
+      {error && <p style={{ color: 'red', fontSize: '0.85rem', margin: '5px 0 0 0' }}>{error}</p>}
     </div>
   );
 };
