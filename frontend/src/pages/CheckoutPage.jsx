@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OrderSummary from "../components/Restaurants/checkout/OrderSummary.jsx";
 import PaymentForm from "../components/Restaurants/checkout/PaymentForm.jsx";
+import PromoCodeInput from "../components/PromoCodeInput.jsx";
 import { getCart, clearCart } from "../utils/cartUtils.js";
 import api from "../api.js";
 
@@ -15,6 +16,7 @@ const CheckoutPage = () => {
   const [authChecking, setAuthChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   const navigate = useNavigate();
 
@@ -126,9 +128,10 @@ const CheckoutPage = () => {
       setLoading(true);
       setError("");
 
-      const response = await api.post(`/orders/${order.id}/confirm`, {
-        payment_info: paymentInfo,
-      });
+      const confirmPayload = { payment_info: paymentInfo };
+      if (appliedPromo) confirmPayload.promo_code = appliedPromo.code;
+
+      const response = await api.post(`/orders/${order.id}/confirm`, confirmPayload);
 
       const result = response.data;
 
@@ -139,6 +142,8 @@ const CheckoutPage = () => {
           orderId: result?.order_id || order.id,
           total: result?.total || orderTotal?.total,
           status: result?.status || "confirmed",
+          promoCode: appliedPromo?.code || null,
+          discount: result?.discount || null,
         },
       });
     } catch (err) {
@@ -220,7 +225,19 @@ const CheckoutPage = () => {
 
           {orderTotal && (
             <div>
-              <OrderSummary orderTotal={orderTotal} />
+              <OrderSummary orderTotal={orderTotal} discount={appliedPromo ? (
+                appliedPromo.discount_type === 'percentage'
+                  ? (Number(orderTotal.subtotal) * appliedPromo.discount_value / 100)
+                  : appliedPromo.discount_value
+              ) : 0} />
+              <div style={{ margin: '16px 0' }}>
+                <label>Promo Code</label>
+                <PromoCodeInput
+                  orderSubtotal={Number(orderTotal.subtotal) || 0}
+                  onApply={(promo) => setAppliedPromo(promo)}
+                  onRemove={() => setAppliedPromo(null)}
+                />
+              </div>
               <PaymentForm onSubmit={handleConfirmOrder} loading={loading} />
             </div>
           )}

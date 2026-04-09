@@ -16,6 +16,24 @@ from services.restaurants_service import can_accept_order, get_restaurant_by_id
 from services.promo_code_service import validate_promo_code, calculate_discount, increment_usage
 
 
+def validate_user_state(payload: OrderCreate) -> None:
+    customer_id = payload.customer_id.strip()
+
+    if customer_id.startswith("guest-"):
+        if not payload.delivery_address or not payload.delivery_address.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Guest checkout requires a delivery address."
+            )
+
+
+def validate_order_before_confirm(order: Order) -> None:
+    if not order.items:
+        raise HTTPException(status_code=400, detail="Order must contain at least one item.")
+    if not order.delivery_address or not order.delivery_address.strip():
+        raise HTTPException(status_code=400, detail="Delivery address is required before checkout.")
+
+
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
     orders = load_all()
     for idx, o in enumerate(orders):
@@ -46,6 +64,8 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+
+    validate_user_state(payload)
 
     restaurant = get_restaurant_by_id(payload.restaurant_id)
     if restaurant is None:
@@ -138,6 +158,7 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
     _require_draft(o, "confirmed")
 
     order = Order(**o)
+    validate_order_before_confirm(order)
 
     restaurant = get_restaurant_by_id(order.restaurant_id)
     if not can_accept_order(restaurant):

@@ -27,12 +27,13 @@ const Orders = () => {
     }
   }, [user?.id]);
 
-  const calculateOrderTotal = (items) => {
-    if (!items || items.length === 0) return "0.00";
-    const subtotal = items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0);
+  const calculateOrderTotal = (order) => {
+    if (!order.items || order.items.length === 0) return "0.00";
+    const subtotal = order.items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0);
     const tax = subtotal * 0.13;
     const deliveryFee = 1.49;
-    return (subtotal + tax + deliveryFee).toFixed(2);
+    const discount = order.discount ? Number(order.discount) : 0;
+    return (subtotal + tax + deliveryFee - discount).toFixed(2);
   };
 
   return (
@@ -58,6 +59,7 @@ const Orders = () => {
                   <strong style={{ fontSize: '1.1rem' }}>Order #{order.id.substring(0, 8)}</strong>
                   <p style={{ fontSize: '0.85rem', color: '#888', margin: '5px 0' }}>
                     Placed: {new Date(order.created_at).toLocaleDateString()}
+                    {order.promo_code && <span style={{ color: '#4caf50', marginLeft: '10px' }}>🏷 {order.promo_code}</span>}
                   </p>
                 </div>
                 <span style={statusBadge(order.status)}>{order.status}</span>
@@ -74,7 +76,7 @@ const Orders = () => {
                 <div>
                   <span style={{ color: '#aaa', fontSize: '0.9rem' }}>Total: </span>
                   <strong style={{ fontSize: '1.2rem', color: '#fff' }}>
-                    ${calculateOrderTotal(order.items)}
+                    ${calculateOrderTotal(order)}
                   </strong>
                 </div>
                 <button 
