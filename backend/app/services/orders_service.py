@@ -171,6 +171,10 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
     orders[idx] = o
     save_all(orders)
 
+    # local import to avoid circular dependency (delivery_service imports orders_service)
+    from services.delivery_service import create_delivery
+    create_delivery(order_id)
+
     return {
         "order_id": o["id"],
         "status": o["status"],
