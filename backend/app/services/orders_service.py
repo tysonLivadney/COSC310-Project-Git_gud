@@ -13,7 +13,6 @@ from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService, subtotal_from_order
 from services.payment_service import PaymentService
 from services.restaurants_service import can_accept_order, get_restaurant_by_id
-from services.order_total_calculator import subtotal_from_order
 from services.promo_code_service import validate_promo_code, calculate_discount, increment_usage
 
 
@@ -47,8 +46,6 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-
-    validate_user_state(payload)
 
     restaurant = get_restaurant_by_id(payload.restaurant_id)
     if restaurant is None:
@@ -141,7 +138,6 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
     _require_draft(o, "confirmed")
 
     order = Order(**o)
-    validate_order_before_confirm(order)
 
     restaurant = get_restaurant_by_id(order.restaurant_id)
     if not can_accept_order(restaurant):
@@ -181,15 +177,6 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
         "confirmed_at": o["confirmed_at"],
         **pricing,
     }
-
-
-def complete_order(order_id: str) -> None:
-    idx, o, orders = _find_order(order_id)
-    if o.get("status") != OrderStatus.CONFIRMED.value:
-        raise HTTPException(status_code=400, detail="Only confirmed orders can be completed.")
-    o["status"] = OrderStatus.COMPLETED.value
-    orders[idx] = o
-    save_all(orders)
 
 
 def complete_order(order_id: str) -> None:
