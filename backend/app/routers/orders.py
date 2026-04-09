@@ -8,6 +8,7 @@ from services.orders_service import (
     update_order,
     confirm_order,
     cancel_order,
+    refund_order,
 )
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -34,10 +35,15 @@ def put_order(order_id: str, payload: OrderUpdate):
 
 @router.post("/{order_id}/confirm")
 def post_confirm_order(order_id: str, payload: OrderConfirmRequest):
-    return confirm_order(order_id, payload.payment_info)
+    return confirm_order(order_id,payload.payment_info)
 
 
 @router.delete("/{order_id}", status_code=http_status.HTTP_204_NO_CONTENT)
 def delete_order(order_id: str):
     cancel_order(order_id)
     return None
+
+@router.post("/{order_id}", response_model=Order)
+def post_refund_order(order_id: str):
+    return refund_order(order_id)
+
