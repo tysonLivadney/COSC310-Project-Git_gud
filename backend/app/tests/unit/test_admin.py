@@ -34,12 +34,14 @@ REGULAR_USER = {
 SAMPLE_ORDER = {
     "restaurant_id": "1",
     "customer_id": "customer-1",
+    "delivery_address": "123 Test St",
     "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
 }
 
 SAMPLE_ORDER_2 = {
     "restaurant_id": "2",
     "customer_id": "customer-2",
+    "delivery_address": "456 Test St",
     "items": [{"food_item": "Pizza", "quantity": 1, "unit_price": 15.00}],
 }
 

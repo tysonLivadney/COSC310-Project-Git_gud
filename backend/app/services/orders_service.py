@@ -10,7 +10,7 @@ from schemas.payment import PaymentInfo, PaymentProcessRequest
 from repositories.orders_repo import load_all, save_all
 from services.address_resolver import resolve_customer_address
 from services.location_service import LocationService
-from services.order_total_calculator import OrderTotalService
+from services.order_total_calculator import OrderTotalService, subtotal_from_order
 from services.payment_service import PaymentService
 from services.restaurants_service import can_accept_order, get_restaurant_by_id
 from services.order_total_calculator import subtotal_from_order
@@ -48,11 +48,17 @@ def create_order(payload: OrderCreate) -> Order:
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
 
+    validate_user_state(payload)
+
     restaurant = get_restaurant_by_id(payload.restaurant_id)
     if restaurant is None:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+    
     if not can_accept_order(restaurant):
-        raise HTTPException(status_code=400, detail="Restaurant is closed or cannot complete order in time")
+        raise HTTPException(
+            status_code=400,
+            detail="Restaurant is closed or cannot complete order in time"
+        )
 
     delivery_address = resolve_customer_address(payload.customer_id, payload.delivery_address)
 
@@ -135,6 +141,7 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
     _require_draft(o, "confirmed")
 
     order = Order(**o)
+    validate_order_before_confirm(order)
 
     restaurant = get_restaurant_by_id(order.restaurant_id)
     if not can_accept_order(restaurant):
@@ -175,7 +182,15 @@ def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = No
         **pricing,
     }
 
-from datetime import datetime, timezone
+
+def complete_order(order_id: str) -> None:
+    idx, o, orders = _find_order(order_id)
+    if o.get("status") != OrderStatus.CONFIRMED.value:
+        raise HTTPException(status_code=400, detail="Only confirmed orders can be completed.")
+    o["status"] = OrderStatus.COMPLETED.value
+    orders[idx] = o
+    save_all(orders)
+
 
 def complete_order(order_id: str) -> None:
     idx, o, orders = _find_order(order_id)
@@ -191,15 +206,14 @@ def cancel_order(order_id: str) -> None:
 
     for idx, o in enumerate(orders):
         if o.get("id") == order_id:
-
-            if o.get("status") not in [OrderStatus.DRAFT.value,OrderStatus.CONFIRMED.value,]:
+            if o.get("status") not in [OrderStatus.DRAFT.value, OrderStatus.CONFIRMED.value]:
                 raise HTTPException(
                     status_code=400,
-                    detail="Only draft or confirmed orders can be cancelled.",)
+                    detail="Only draft or confirmed orders can be cancelled.",
+                )
 
             o["status"] = OrderStatus.CANCELLED.value
             o["cancelled_at"] = datetime.now(timezone.utc).isoformat()
-
             orders[idx] = o
             save_all(orders)
 
@@ -209,8 +223,9 @@ def cancel_order(order_id: str) -> None:
             return
 
     raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
-    
-def refund_order(order_id:str) -> Order:
+
+
+def refund_order(order_id: str) -> Order:
     orders = load_all()
     for idx, o in enumerate(orders):
         if o.get("id") == order_id:
@@ -219,6 +234,7 @@ def refund_order(order_id:str) -> Order:
                     status_code=400,
                     detail="Only cancelled orders can be refunded.",
                 )
+
             order = Order(**o)
             refund_amount = subtotal_from_order(order)
             o["status"] = OrderStatus.REFUNDED.value
@@ -227,5 +243,5 @@ def refund_order(order_id:str) -> Order:
             orders[idx] = o
             save_all(orders)
             return Order(**o)
-    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
 
+    raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")

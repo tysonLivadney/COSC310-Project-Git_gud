@@ -56,16 +56,16 @@ def _auth_header(token):
 
 
 #POST /drivers/profile tests
-def test_create_driver_profile():
+def test_update_driver_profile_after_registration():
+    # Profile is auto-created on registration; update it with full details via PUT
     token = _register_and_login(DRIVER_USER)
-    response = client.post("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
-    assert response.status_code == 201
+    response = client.put("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
+    assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Test Driver"
     assert data["phone"] == "+1234567890"
     assert data["vehicle_type"] == "Sedan"
     assert data["license_plate"] == "ABC123"
-    assert data["available"] == False
 
 
 def test_create_profile_duplicate():
@@ -87,24 +87,26 @@ def test_create_profile_unauthorized():
 
 
 #GET /drivers/profile tests
-def test_get_driver_profile():
+def test_get_driver_profile_after_update():
     token = _register_and_login(DRIVER_USER)
-    client.post("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
+    client.put("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
     response = client.get("/drivers/profile", headers=_auth_header(token))
     assert response.status_code == 200
     assert response.json()["phone"] == "+1234567890"
 
 
-def test_get_profile_not_created():
+def test_get_profile_auto_created_on_registration():
+    # Profile is auto-created on registration with the driver's name
     token = _register_and_login(DRIVER_USER)
     response = client.get("/drivers/profile", headers=_auth_header(token))
-    assert response.status_code == 404
+    assert response.status_code == 200
+    assert response.json()["name"] == "Test Driver"
 
 
 #PUT /drivers/profile tests
 def test_update_driver_profile():
     token = _register_and_login(DRIVER_USER)
-    client.post("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
+    client.put("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
     response = client.put("/drivers/profile", json={"phone": "+9999999999"}, headers=_auth_header(token))
     assert response.status_code == 200
     assert response.json()["phone"] == "+9999999999"
