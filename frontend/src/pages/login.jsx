@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const ROLE_ROUTES = {
   user: '/customer-dashboard',
-  owner: '/manager',
+  owner: '/owner',
   manager: '/admin-dashboard',
   driver: '/driver-dashboard',
 };

@@ -63,7 +63,9 @@ def _create_delivery():
 
 def _setup_driver():
     token = _register_and_login(DRIVER_USER)
-    resp = client.post("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
+    # Profile is auto-created on registration; update with valid details
+    client.put("/drivers/profile", json=VALID_PROFILE, headers=_auth_header(token))
+    resp = client.get("/drivers/profile", headers=_auth_header(token))
     return resp.json()["user_id"]
 
 
