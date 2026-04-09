@@ -35,7 +35,7 @@ def put_order(order_id: str, payload: OrderUpdate):
 
 @router.post("/{order_id}/confirm")
 def post_confirm_order(order_id: str, payload: OrderConfirmRequest):
-    return confirm_order(order_id,payload.payment_info)
+    return confirm_order(order_id, payload.payment_info, payload.promo_code)
 
 
 @router.delete("/{order_id}", status_code=http_status.HTTP_204_NO_CONTENT)

@@ -13,24 +13,7 @@ from services.location_service import LocationService
 from services.order_total_calculator import OrderTotalService, subtotal_from_order
 from services.payment_service import PaymentService
 from services.restaurants_service import can_accept_order, get_restaurant_by_id
-
-
-def validate_user_state(payload: OrderCreate) -> None:
-    customer_id = payload.customer_id.strip()
-
-    if customer_id.startswith("guest-"):
-        if not payload.delivery_address or not payload.delivery_address.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="Guest checkout requires a delivery address."
-            )
-
-
-def validate_order_before_confirm(order: Order) -> None:
-    if not order.items:
-        raise HTTPException(status_code=400, detail="Order must contain at least one item.")
-    if not order.delivery_address or not order.delivery_address.strip():
-        raise HTTPException(status_code=400, detail="Delivery address is required before checkout.")
+from services.promo_code_service import validate_promo_code, calculate_discount, increment_usage
 
 
 def _find_order(order_id: str) -> Tuple[int, dict, list]:
@@ -63,8 +46,6 @@ def create_order(payload: OrderCreate) -> Order:
     new_id = str(uuid.uuid4())
     if any(o.get("id") == new_id for o in orders):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-
-    validate_user_state(payload)
 
     restaurant = get_restaurant_by_id(payload.restaurant_id)
     if restaurant is None:
@@ -117,7 +98,7 @@ def update_order(order_id: str, payload: OrderUpdate) -> Order:
     return updated
 
 
-def _calculate_and_process_payment(order, order_id, payment_info):
+def _calculate_and_process_payment(order, order_id, payment_info, discount=Decimal("0.00")):
     customer_location = location_service.get_user_location(order.customer_id)
     restaurant_location = location_service.get_restaurant_location(order.restaurant_id)
 
@@ -133,6 +114,11 @@ def _calculate_and_process_payment(order, order_id, payment_info):
         order, province, distance_km,
     )
 
+    # apply promo code discount to the total
+    total = total - discount
+    if total < Decimal("0.00"):
+        total = Decimal("0.00")
+
     payment_request = PaymentProcessRequest(
         order_id=order_id, total=total, payment_info=payment_info,
     )
@@ -141,25 +127,36 @@ def _calculate_and_process_payment(order, order_id, payment_info):
     return {
         "payment": payment_result,
         "distance_km": float(distance_km),
-        "subtotal": subtotal,
-        "tax_rate": tax_rate,
-        "tax": tax,
-        "delivery_fee": delivery_fee,
-        "total": total,
-        "province": province,
+        "subtotal": subtotal, "tax_rate": tax_rate,
+        "tax": tax, "delivery_fee": delivery_fee,
+        "discount": discount, "total": total, "province": province,
     }
 
 
-def confirm_order(order_id: str, payment_info: PaymentInfo):
+def confirm_order(order_id: str, payment_info: PaymentInfo, promo_code: str = None):
     idx, o, orders = _find_order(order_id)
     _require_draft(o, "confirmed")
 
     order = Order(**o)
-    validate_order_before_confirm(order)
 
-    get_restaurant_by_id(order.restaurant_id)
-    
-    pricing = _calculate_and_process_payment(order, order_id, payment_info)
+    restaurant = get_restaurant_by_id(order.restaurant_id)
+    if not can_accept_order(restaurant):
+        raise HTTPException(status_code=400, detail="Restaurant is closed or cannot complete order in time")
+
+    # if a promo code was provided, validate it against the subtotal
+    discount_amount = Decimal("0.00")
+    applied_promo = None
+    if promo_code:
+        subtotal = OrderTotalService.subtotal_from_order(order)
+        promo = validate_promo_code(promo_code, float(subtotal))
+        discount_amount = calculate_discount(promo, subtotal)
+        applied_promo = promo_code.strip().upper()
+
+    pricing = _calculate_and_process_payment(order, order_id, payment_info, discount_amount)
+
+    # if promo was used, increment the usage count
+    if applied_promo:
+        increment_usage(applied_promo)
 
     o["status"] = OrderStatus.CONFIRMED.value
     o["confirmed_at"] = datetime.now(timezone.utc).isoformat()
@@ -167,6 +164,10 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
     o["tax"] = str(pricing["tax"])
     o["delivery_fee"] = str(pricing["delivery_fee"])
     o["total"] = str(pricing["total"])
+    if applied_promo:
+        o["promo_code"] = applied_promo
+        o["discount"] = str(discount_amount)
+
     orders[idx] = o
     save_all(orders)
 
@@ -176,15 +177,6 @@ def confirm_order(order_id: str, payment_info: PaymentInfo):
         "confirmed_at": o["confirmed_at"],
         **pricing,
     }
-
-
-def complete_order(order_id: str) -> None:
-    idx, o, orders = _find_order(order_id)
-    if o.get("status") != OrderStatus.CONFIRMED.value:
-        raise HTTPException(status_code=400, detail="Only confirmed orders can be completed.")
-    o["status"] = OrderStatus.COMPLETED.value
-    orders[idx] = o
-    save_all(orders)
 
 
 def complete_order(order_id: str) -> None:
