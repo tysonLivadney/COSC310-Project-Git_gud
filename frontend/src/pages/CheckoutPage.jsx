@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OrderSummary from "../components/Restaurants/checkout/OrderSummary.jsx";
 import PaymentForm from "../components/Restaurants/checkout/PaymentForm.jsx";
+import PromoCodeInput from "../components/PromoCodeInput.jsx";
 import { getCart, clearCart } from "../utils/cartUtils.js";
 import api from "../api.js";
 
@@ -15,6 +16,7 @@ const CheckoutPage = () => {
   const [authChecking, setAuthChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   const navigate = useNavigate();
 
@@ -126,9 +128,10 @@ const CheckoutPage = () => {
       setLoading(true);
       setError("");
 
-      const response = await api.post(`/orders/${order.id}/confirm`, {
-        payment_info: paymentInfo,
-      });
+      const confirmPayload = { payment_info: paymentInfo };
+      if (appliedPromo) confirmPayload.promo_code = appliedPromo.code;
+
+      const response = await api.post(`/orders/${order.id}/confirm`, confirmPayload);
 
       const result = response.data;
 
@@ -221,6 +224,14 @@ const CheckoutPage = () => {
           {orderTotal && (
             <div>
               <OrderSummary orderTotal={orderTotal} />
+              <div style={{ margin: '16px 0' }}>
+                <h3>Promo Code</h3>
+                <PromoCodeInput
+                  orderSubtotal={orderTotal.subtotal || 0}
+                  onApply={(promo) => setAppliedPromo(promo)}
+                  onRemove={() => setAppliedPromo(null)}
+                />
+              </div>
               <PaymentForm onSubmit={handleConfirmOrder} loading={loading} />
             </div>
           )}

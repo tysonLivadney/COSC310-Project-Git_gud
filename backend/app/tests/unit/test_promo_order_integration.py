@@ -20,6 +20,7 @@ SAMPLE_ORDER = {
     "restaurant_id": "1",
     "customer_id": "customer-1",
     "items": [{"food_item": "Burger", "quantity": 2, "unit_price": 10.00}],
+    "delivery_address": "123 Test St",
 }
 
 PAYMENT_INFO = {
